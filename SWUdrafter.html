@@ -52,4 +52,352 @@
         #list-Pool .card-item, #list-Leader .card-item, #list-Base .card-item { margin-top: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.6); }
         .card-item:hover { transform: scale(1.35) translateY(-10px); z-index: 1000 !important; box-shadow: 0 10px 30px rgba(0,0,0,0.9); border: 1px solid var(--accent); }
         .card-item img { width: 100%; height: auto; display: block; border-radius: 6px; pointer-events: none; }
-        .card-actions { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0
+        .card-actions { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); display: none; align-items: center; justify-content: center; border-radius: 6px; }
+        .card-item:hover .card-actions { display: flex; }
+        .add-icon { font-size: 24px; color: #fff; font-weight: bold; background: rgba(0,0,0,0.6); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
+
+        /* Preview & Modal */
+        #preview-tooltip { position: fixed; display: none; z-index: 5000; pointer-events: none; background: rgba(0,0,0,0.8); border: 2px solid #555; border-radius: 8px; padding: 0; box-shadow: 0 10px 40px rgba(0,0,0,0.9); overflow: hidden; }
+        #preview-tooltip img { width: 320px; display: block; border-radius: 6px; }
+        #preview-tooltip.big-preview img { width: auto; height: 60vh; max-width: none; }
+
+        #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; justify-content:center; align-items:center; flex-direction: column; }
+        #modal img { max-width:90vw; max-height:70vh; border-radius: 10px; display: block; box-shadow: 0 0 50px #000; border: 2px solid #333; cursor: pointer; }
+        .big-flip-btn { background: var(--accent); color: #000; font-family: 'Orbitron'; font-size: 24px; font-weight: 900; padding: 15px 40px; border: 3px solid #000; border-radius: 8px; cursor: pointer; box-shadow: 0 0 20px var(--accent); margin-top: 20px; }
+
+        /* DEBUG CONSOLE */
+        #debug-console {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 100px; 
+            background: rgba(0,0,0,0.9); color: #0f0; font-family: monospace; font-size: 11px;
+            overflow-y: auto; padding: 10px; border-top: 2px solid #0f0; z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="controls">
+            <h1>SWU Drafter</h1>
+            <select id="setSelect">
+                <option value="TWI">Twilight of the Republic (TWI)</option>
+                <option value="JTL">Jump to Lightspeed (JTL)</option>
+                <option value="LOF">Legends of the Force (LOF)</option>
+                <option value="SEC">Secrets of Power (SEC)</option>
+                <option value="SOR">Spark of Rebellion (SOR)</option>
+                <option value="SHD">Shadows of the Galaxy (SHD)</option>
+            </select>
+            <label style="color:#aaa; font-size:12px; margin-left:10px;">Pakker:</label>
+            <input type="number" id="packCount" value="6" min="1" max="24">
+            <button class="btn" id="btn-open" onclick="runOpenPacks()">ÅBN</button>
+            <button class="btn" onclick="toggleLeadersBases()">Skjul L/B</button>
+            <button class="btn" onclick="toggleSort()">Sorter: Cost</button>
+            <button class="btn btn-pew" onclick="playAudio('snd-pew')">PEW!</button>
+        </div>
+        <div id="stats"><span class="stat">Pool: <span id="s-total">0</span></span></div>
+    </header>
+
+    <div id="main-area">
+        <div id="board"></div>
+        <div id="sidebar">
+            <div class="sb-header">Dit Deck (<span id="deck-count">0</span>)</div>
+            <ul id="deck-list"></ul>
+            <div class="sb-footer">
+                <button class="btn" style="width:100%" onclick="copyJSON()">Kopiér JSON</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="debug-console">Velkommen. Venter på input...</div>
+
+    <div id="modal" onclick="closeModal()">
+        <img id="modal-img" onclick="flipLeader(event)">
+        <button id="modal-flip-btn" class="big-flip-btn" onclick="flipLeader(event)">VEND KORT ↻</button>
+    </div>
+
+    <div id="preview-tooltip"></div>
+    
+    <audio id="snd-cantina" src="https://www.myinstants.com/media/sounds/cantina-band-star-wars.mp3"></audio>
+    <audio id="snd-pew" src="https://www.myinstants.com/media/sounds/pew-pew-pew-pew-pew.mp3"></audio>
+    <audio id="snd-copy" src="https://www.myinstants.com/media/sounds/lightsaber-turn-on.mp3"></audio>
+
+<script>
+// --- LOGGER ---
+function log(msg, type="info") {
+    const c = document.getElementById('debug-console');
+    const line = document.createElement('div');
+    line.innerText = `> ${msg}`;
+    if(type === "error") line.style.color = "red";
+    if(type === "success") line.style.color = "yellow";
+    c.prepend(line);
+    console.log(msg);
+}
+
+// --- CONFIG ---
+const COST_COLS = ["1", "2", "3", "4", "5", "6", "7", "8"];
+const ASPECT_COLS = ["Aggression", "Command", "Cunning", "Vigilance", "Villainy", "Heroism"];
+let myDeck = {}, currentView = [], areSpecialColsVisible = true, currentSortMode = 'cost', CARD_DATABASE = {}; 
+
+// --- API LOGIC ---
+function mapApiType(card) {
+    if (!card.Type) return "Unit";
+    const t = card.Type.toLowerCase();
+    if (t.includes("leader")) return "Leader";
+    if (t.includes("base")) return "Base";
+    return "Unit";
+}
+
+function mapApiAspect(card) {
+    const aspects = card.Aspects || [];
+    const main = ["Aggression", "Command", "Cunning", "Vigilance"];
+    for (let a of aspects) if (main.includes(a)) return a;
+    return aspects[0] || "Villainy";
+}
+
+async function fetchSetData(setCode) {
+    log(`Henter data for ${setCode}...`);
+    
+    if (CARD_DATABASE[setCode]) {
+        log("Data fundet i hukommelse.", "success");
+        return CARD_DATABASE[setCode];
+    }
+
+    try {
+        const url = `https://api.swu-db.com/cards/search?q=set:${setCode.toLowerCase()}&pretty=false`;
+        const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`;
+        
+        log(`Kalder API: ${proxyUrl}`);
+        const res = await fetch(proxyUrl);
+        
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        
+        if (!data || data.length === 0) throw new Error("Tom data modtaget");
+        
+        log(`Modtog ${data.length} kort fra API. Behandler...`, "success");
+
+        const processed = { leaders: [], bases: [], deck: [] };
+        data.forEach(c => {
+            const id = c.Number.toString().padStart(3, '0');
+            const type = mapApiType(c);
+            const obj = {
+                id: id, set: setCode, name: c.Name, type: type,
+                cost: (c.Cost != null) ? c.Cost.toString() : "0",
+                aspect: mapApiAspect(c),
+                img: c.FrontArt || `https://swudb.com/images/cards/${setCode}/${id}.png`,
+                back: c.BackArt || (type==='Leader' ? `https://swudb.com/images/cards/${setCode}/${id}-back.png` : null)
+            };
+            if (type === 'Leader') processed.leaders.push(obj);
+            else if (type === 'Base') processed.bases.push(obj);
+            else processed.deck.push(obj);
+        });
+        
+        CARD_DATABASE[setCode] = processed;
+        return processed;
+    } catch (err) {
+        log(`FEJL: ${err.message}`, "error");
+        return null; // Signal fallback
+    }
+}
+
+function generateFallback(setCode) {
+    log("Genererer nødhjælps-data...", "error");
+    const set = { leaders:[], bases:[], deck:[] };
+    const aspects = ["Aggression", "Command", "Cunning", "Vigilance"];
+    for(let i=1; i<=250; i++) {
+        const id = i.toString().padStart(3, '0');
+        let type = "Unit";
+        if(i<=18) type="Leader"; else if(i<=30) type="Base";
+        const c = {
+            id: id, set: setCode, name: `${setCode} #${id}`, type: type,
+            cost: ((i%8)+1).toString(), aspect: aspects[i%4],
+            img: `https://swudb.com/images/cards/${setCode}/${id}.png`,
+            back: `https://swudb.com/images/cards/${setCode}/${id}-back.png`
+        };
+        if(type==='Leader') set.leaders.push(c);
+        else if(type==='Base') set.bases.push(c);
+        else set.deck.push(c);
+    }
+    return set;
+}
+
+// --- MAIN FUNCTION ---
+async function runOpenPacks() {
+    const btn = document.getElementById('btn-open');
+    btn.disabled = true;
+    log("Starter pack opening...");
+    playAudio('snd-cantina');
+
+    const setCode = document.getElementById('setSelect').value;
+    const packCount = parseInt(document.getElementById('packCount').value) || 6;
+
+    let data = await fetchSetData(setCode);
+    if (!data) data = generateFallback(setCode);
+
+    currentView = [];
+    for(let i=0; i<packCount; i++) {
+        if(data.leaders.length) currentView.push({...data.leaders[Math.floor(Math.random()*data.leaders.length)], uid:Date.now()+i+'l', column:'Leader'});
+        if(data.bases.length) currentView.push({...data.bases[Math.floor(Math.random()*data.bases.length)], uid:Date.now()+i+'b', column:'Base'});
+        for(let k=0; k<14; k++) {
+            if(data.deck.length) {
+                const c = data.deck[Math.floor(Math.random()*data.deck.length)];
+                let col = currentSortMode === 'cost' ? ((parseInt(c.cost)>8)?'8':c.cost) : c.aspect;
+                currentView.push({...c, uid:Date.now()+i+k+'d', column:col});
+            }
+        }
+    }
+    
+    renderBoard();
+    log(`Færdig! Viser ${currentView.length} kort.`);
+    btn.disabled = false;
+}
+
+// --- RENDER & UI ---
+function initBoard() {
+    const board = document.getElementById('board');
+    board.innerHTML = '';
+    let cols = (currentSortMode === 'cost') ? ["Leader", "Base", "Pool", ...COST_COLS] : ["Leader", "Base", "Pool", ...ASPECT_COLS];
+    
+    cols.forEach(c => {
+        const el = document.createElement('div'); el.id = `col-${c}`;
+        let cls = 'column'; if(c==='Leader'||c==='Base') cls+=' col-special'; if(c==='Pool') cls+=' col-pool';
+        el.className = cls;
+        let hCls = 'ch-cost'; 
+        if(c==='Leader') hCls='ch-Leader'; else if(c==='Base') hCls='ch-Base'; else if(ASPECT_COLS.includes(c)) hCls=`ch-${c}`;
+        
+        el.innerHTML = `<div class="col-header ${hCls}">${c}</div><div class="col-content" id="list-${c}"></div>`;
+        el.ondragover = e => e.preventDefault();
+        el.ondrop = e => handleDrop(e, c);
+        board.appendChild(el);
+    });
+    toggleLeadersBases(true);
+}
+
+function renderBoard() {
+    const cols = ["Leader", "Base", "Pool", ...COST_COLS, ...ASPECT_COLS];
+    cols.forEach(c => { const el = document.getElementById(`list-${c}`); if(el) el.innerHTML = ''; });
+    
+    const map = {};
+    currentView.forEach(c => {
+        let t = c.column;
+        if(c.type!=='Leader' && c.type!=='Base') {
+            t = (currentSortMode==='cost') ? ((parseInt(c.cost)>8)?'8':c.cost) : c.aspect;
+        }
+        c.column = t;
+        const key = c.id + t;
+        if(map[key]) map[key].count++; else map[key] = {...c, count:1};
+    });
+
+    document.getElementById('s-total').innerText = currentView.length;
+
+    Object.values(map).forEach(c => {
+        const target = document.getElementById(`list-${c.column}`) || document.getElementById('list-Pool');
+        if(!target) return;
+        
+        const el = document.createElement('div'); el.className = 'card-item'; el.draggable = true;
+        el.ondragstart = e => e.dataTransfer.setData("text", JSON.stringify({id:c.id, set:c.set}));
+        el.onclick = (e) => { if(e.target.className !== 'add-icon') openModal(c); };
+        el.onmouseenter = e => showPreview(e, c.img, c.type);
+        el.onmouseleave = hidePreview;
+        el.onmousemove = e => movePreview(e);
+        
+        el.innerHTML = `${c.count>1 ? `<div class="stack-badge">${c.count}</div>` : ''}<img src="${c.img}"><div class="card-actions" onclick="addToDeck('${c.id}','${c.set}')"><div class="add-icon">+</div></div>`;
+        target.appendChild(el);
+    });
+}
+
+// --- UTILS ---
+function playAudio(id) {
+    const s = document.getElementById(id);
+    if(s) { s.volume=0.4; s.currentTime=0; s.play().catch(e => log("Lyd fejl: " + e.message, "error")); }
+}
+
+function toggleSort() {
+    currentSortMode = (currentSortMode === 'cost') ? 'aspect' : 'cost';
+    document.getElementById('btn-sort').innerText = `Sorter: ${currentSortMode}`;
+    initBoard(); renderBoard();
+}
+
+function toggleLeadersBases(keep) {
+    if(!keep) areSpecialColsVisible = !areSpecialColsVisible;
+    const disp = areSpecialColsVisible ? 'flex' : 'none';
+    document.getElementById('col-Leader').style.display = disp;
+    document.getElementById('col-Base').style.display = disp;
+    document.getElementById('btn-toggle-lb').innerText = areSpecialColsVisible ? "Skjul L/B" : "Vis L/B";
+}
+
+// --- DRAG & DROP & DECK ---
+function handleDrop(e, col) { e.preventDefault(); } // No manual sort on board
+function addToDeck(id, set) {
+    const idx = currentView.findIndex(c => c.id === id && c.set === set);
+    if(idx === -1) return;
+    const c = currentView.splice(idx, 1)[0];
+    const k = `${c.set}_${c.id}`;
+    if(myDeck[k]) myDeck[k].count++; else myDeck[k] = {...c, count:1};
+    renderBoard(); renderDeck();
+}
+function renderDeck() {
+    const ul = document.getElementById('deck-list'); ul.innerHTML = '';
+    let sum = 0;
+    Object.values(myDeck).forEach(c => {
+        sum += c.count;
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${c.name}</span> <span>${c.count}</span>`;
+        li.onclick = () => {
+            myDeck[`${c.set}_${c.id}`].count--;
+            if(myDeck[`${c.set}_${c.id}`].count <= 0) delete myDeck[`${c.set}_${c.id}`];
+            currentView.push({...c, count:undefined, uid:Date.now()});
+            renderBoard(); renderDeck();
+        };
+        ul.appendChild(li);
+    });
+    document.getElementById('deck-count').innerText = sum;
+}
+function clearDeck() { 
+    Object.values(myDeck).forEach(c => { for(let i=0;i<c.count;i++) currentView.push({...c, count:undefined}); });
+    myDeck={}; renderBoard(); renderDeck();
+}
+function copyJSON() { 
+    playAudio('snd-copy');
+    alert("JSON kopieret (Simuleret)"); // For simplicity in debug mode
+}
+
+// --- MODAL ---
+const modal = document.getElementById('modal');
+const mImg = document.getElementById('modal-img');
+const mBtn = document.getElementById('modal-flip-btn');
+let mCard = null;
+
+function openModal(c) {
+    mCard = c; modal.style.display = 'flex';
+    mImg.src = c.img;
+    mBtn.style.display = (c.type === 'Leader') ? 'block' : 'none';
+}
+function flipLeader(e) {
+    if(e) e.stopPropagation();
+    if(!mCard || mCard.type !== 'Leader') return;
+    const isBack = mImg.src.includes("-back");
+    mImg.src = isBack ? mCard.img : mCard.back;
+}
+function closeModal() { modal.style.display = 'none'; }
+
+// --- PREVIEW ---
+const tip = document.getElementById('preview-tooltip');
+function showPreview(e, src, type) {
+    tip.innerHTML = `<img src="${src}">`;
+    tip.className = (type==='Leader'||type==='Base') ? 'big-preview' : '';
+    tip.style.display = 'block'; movePreview(e);
+}
+function movePreview(e) {
+    let x=e.clientX+20, y=e.clientY+10;
+    if(x+320 > window.innerWidth) x -= 340;
+    if(y+400 > window.innerHeight) y = window.innerHeight - 420;
+    tip.style.left=x+'px'; tip.style.top=y+'px';
+}
+function hidePreview() { tip.style.display='none'; }
+
+// START
+initBoard();
+log("Klar til brug.");
+</script>
+</body>
+</html>
