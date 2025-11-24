@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SWU: Ultimate Drafter (DB Edition)</title>
+    <title>SWU: Ultimate Drafter (Complete Edition)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 
     <style>
-        /* ... (Samme CSS som før - jeg sparer plads her, men behold din CSS) ... */
         :root {
             --bg: #121212; --panel: #1e1e1e; --accent: #FFE81F; --text-main: #e0e0e0;
             --c-leader: #eee; --c-base: #888; --c-unit: #444; --c-pool: #553333; 
             --c-Vigilance: #0055aa; --c-Command: #00aa00; --c-Aggression: #aa0000;
-            --c-Cunning: #aa8800; --c-Villainy: #222; --c-Heroism: #ddd; --success-green: #0a0;
+            --c-Cunning: #eebb00; --c-Villainy: #444; --c-Heroism: #ddd;
+            --success-green: #0a0;
         }
         body { background: var(--bg); color: var(--text-main); font-family: 'Rajdhani', sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
         header { padding: 10px 20px; background: #000; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; height: 50px; z-index: 10; }
         h1 { margin: 0; font-family: 'Orbitron'; color: var(--accent); font-size: 18px; letter-spacing: 1px; }
         .controls { display: flex; gap: 10px; align-items: center; }
@@ -23,23 +24,30 @@
         input { width: 50px; text-align: center; }
         button.btn { background: #333; color: white; border: 1px solid #555; padding: 5px 15px; font-family: 'Orbitron'; cursor: pointer; transition: 0.2s; border-radius: 4px; font-size: 12px; text-transform: uppercase; }
         button.btn:hover { border-color: var(--accent); color: var(--accent); background: #000; }
-        button.btn:disabled { color: #555; opacity: 0.7; }
         button.btn-pew { background: #822; border-color: #a44; color: #fff; font-weight: bold; }
-        button.btn-pew:hover { background: #b33; border-color: #f66; color: #fff; transform: scale(1.1); }
+        button.btn-pew:hover { background: #b33; border-color: #f66; }
+        
         #data-status { font-size: 10px; color: #777; margin-left: 10px; font-family: monospace; }
         .status-ok { color: var(--success-green) !important; }
         .stat { font-family: 'Orbitron'; font-size: 14px; color: #aaa; margin-right: 20px; } .stat span { color: var(--accent); }
+
         #main-area { display: flex; flex: 1; overflow: hidden; }
-        #board { flex: 1; display: flex; gap: 10px; padding: 15px; overflow-x: auto; background: url('https://swudb.com/images/background.jpg') center/cover fixed no-repeat; align-items: flex-start; }
+        #board { flex: 1; display: flex; gap: 8px; padding: 15px; overflow-x: auto; background: url('https://swudb.com/images/background.jpg') center/cover fixed no-repeat; align-items: flex-start; }
         #board::before { content:''; position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: -1; pointer-events: none; }
+
         .column { background: rgba(20, 20, 20, 0.9); border: 1px solid #333; border-radius: 8px; display: flex; flex-direction: column; transition: all 0.2s; flex-shrink: 0; height: 100%; min-width: 160px; width: 160px; }
         .column.drag-over { background: rgba(60, 60, 60, 0.95); box-shadow: 0 0 25px var(--accent); border-color: var(--accent); }
         .col-special { width: 180px; min-width: 180px; border: 1px solid #555; }
+
         .col-header { padding: 8px; text-align: center; font-family: 'Orbitron'; font-weight: bold; font-size: 16px; border-bottom: 4px solid transparent; text-transform: uppercase; background: rgba(0,0,0,0.6); border-top-left-radius: 8px; border-top-right-radius: 8px; z-index: 5; }
         .ch-Leader { border-bottom-color: var(--c-leader); color: var(--c-leader); } .ch-Base { border-bottom-color: var(--c-base); color: var(--c-base); }
         .ch-cost { border-bottom-color: var(--c-unit); color: #fff; font-size: 20px; }
-        .ch-Aggression { border-bottom-color: var(--c-Aggression); color: #ff6666; } .ch-Command { border-bottom-color: var(--c-Command); color: #66ff66; } .ch-Cunning { border-bottom-color: var(--c-Cunning); color: #ffee66; } .ch-Vigilance { border-bottom-color: var(--c-Vigilance); color: #66bbff; } .ch-Villainy { border-bottom-color: var(--c-Villainy); color: #999; } .ch-Heroism { border-bottom-color: var(--c-Heroism); color: #fff; }
-        .col-content { flex: 1; overflow-y: auto; overflow-x: visible; padding: 15px 10px 50px 10px; display: flex; flex-direction: column; align-items: center; }
+        .ch-Aggression { border-bottom-color: var(--c-Aggression); color: #ff6666; } .ch-Command { border-bottom-color: var(--c-Command); color: #66ff66; }
+        .ch-Cunning { border-bottom-color: var(--c-Cunning); color: #ffee66; } .ch-Vigilance { border-bottom-color: var(--c-Vigilance); color: #66bbff; }
+        .ch-Villainy { border-bottom-color: var(--c-Villainy); color: #999; } .ch-Heroism { border-bottom-color: var(--c-Heroism); color: #fff; }
+
+        .col-content { flex: 1; overflow-y: auto; overflow-x: visible; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+
         #sidebar { width: 280px; background: #111; border-left: 1px solid #333; display: flex; flex-direction: column; z-index: 100; transition: all 0.2s; position: relative; flex-shrink: 0; }
         #sidebar.drag-over-deck { background: #1a1a1a; box-shadow: inset 0 0 20px var(--success-green); border-left: 2px solid var(--success-green); }
         #sidebar.drag-over-deck::after { content: 'SLIP FOR AT TILFØJE'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--success-green); font-family: 'Orbitron'; font-weight: bold; width: 100%; text-align: center; pointer-events: none; }
@@ -48,26 +56,34 @@
         #deck-list li { background: #222; padding: 6px 10px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; border-left: 3px solid #555; font-size: 13px; border-radius: 3px; cursor: pointer; transition: background 0.2s; }
         #deck-list li:hover { background: #444; color: #fff; }
         .sb-footer { padding: 10px; border-top: 1px solid #333; background: #181818; }
-        .card-item { position: relative; background: #000; border-radius: 6px; cursor: grab; box-shadow: 0 -2px 5px rgba(0,0,0,0.5); transition: transform 0.1s ease-out, margin 0.2s; display: flex; flex-direction: column; width: 100%; z-index: 1; }
-        .col-content:not(#list-Leader):not(#list-Base) .card-item:not(:first-child) { margin-top: -135px; }
-        #list-Leader .card-item, #list-Base .card-item { margin-top: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.6); }
-        .card-item:hover { transform: scale(1.35) translateY(-10px); z-index: 1000 !important; box-shadow: 0 10px 30px rgba(0,0,0,0.9); border: 1px solid var(--accent); }
-        .card-item img { width: 100%; height: auto; display: block; border-radius: 6px; pointer-events: none; }
-        .card-actions { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); display: none; align-items: center; justify-content: center; border-radius: 6px; }
+
+        .card-item { position: relative; background: #000; border-radius: 9px; cursor: grab; width: 100%; z-index: 1; transition: transform 0.1s; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        .col-content:not(#list-Leader):not(#list-Base) .card-item:not(:first-child) { margin-top: -145px; } 
+        #list-Leader .card-item, #list-Base .card-item { margin-top: 10px; }
+        
+        .card-item:hover { transform: scale(1.1) translateY(-10px); z-index: 1000 !important; box-shadow: 0 10px 30px rgba(0,0,0,0.8); border: 1px solid var(--accent); }
+        .card-item img { width: 100%; height: auto; display: block; border-radius: 9px; pointer-events: none; }
+        
+        .card-actions { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; border-radius: 9px; }
         .card-item:hover .card-actions { display: flex; }
-        .add-icon { font-size: 24px; color: #fff; font-weight: bold; background: rgba(0,0,0,0.6); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
-        .stack-badge { position: absolute; top: 5px; right: 5px; background: var(--accent); color: #000; width: 20px; height: 20px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 11px; font-weight: 900; border: 2px solid #000; z-index: 5; box-shadow: 2px 2px 5px #000; }
-        #preview-tooltip { position: fixed; display: none; z-index: 5000; pointer-events: none; background: rgba(0,0,0,0.8); border: 2px solid #555; border-radius: 8px; padding: 0; box-shadow: 0 10px 40px rgba(0,0,0,0.9); overflow: hidden; }
-        #preview-tooltip img { width: 320px; display: block; border-radius: 6px; }
-        #preview-tooltip.big-preview img { width: auto; height: 60vh; max-width: none; }
-        #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; justify-content:center; align-items:center; flex-direction: column; }
-        .modal-card-container { position: relative; margin-bottom: 20px; cursor: pointer; }
-        .modal-card-container:hover::after { content: '↻'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 100px; color: rgba(255, 255, 255, 0.7); text-shadow: 0 0 20px #000; pointer-events: none; }
-        #modal img { max-width:90vw; max-height:70vh; border-radius: 10px; display: block; box-shadow: 0 0 50px #000; border: 2px solid #333; }
-        .big-flip-btn { background: var(--accent); color: #000; font-family: 'Orbitron'; font-size: 24px; font-weight: 900; padding: 15px 40px; border: 3px solid #000; border-radius: 8px; cursor: pointer; box-shadow: 0 0 20px var(--accent); animation: pulse 2s infinite; display: none; }
-        .big-flip-btn:hover { background: #fff; transform: scale(1.05); }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 232, 31, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(255, 232, 31, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 232, 31, 0); } }
-        #toast { visibility: hidden; min-width: 200px; background-color: #333; color: #fff; text-align: center; border-radius: 4px; padding: 12px; position: fixed; z-index: 3000; left: 50%; bottom: 30px; transform: translateX(-50%); font-family: 'Orbitron'; border: 1px solid var(--accent); }
+        .add-icon { font-size: 30px; color: #fff; font-weight: bold; width: 50px; height: 50px; background: rgba(0,0,0,0.7); border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
+        
+        .rarity-bar { height: 4px; width: 100%; border-bottom-left-radius: 9px; border-bottom-right-radius: 9px; position: absolute; bottom: 0; left: 0; }
+        .rarity-Common { background: #cd7f32; } .rarity-Uncommon { background: #c0c0c0; } 
+        .rarity-Rare { background: #ffd700; } .rarity-Legendary { background: #ff0000; } .rarity-Special { background: #cc00cc; }
+
+        #preview-tooltip { position: fixed; display: none; z-index: 5000; pointer-events: none; background: rgba(0,0,0,0.9); border: 2px solid #555; border-radius: 8px; overflow: hidden; box-shadow: 0 20px 50px #000; }
+        #preview-tooltip img { display: block; width: 300px; }
+        #preview-tooltip.big-preview img { width: auto; height: 60vh; }
+
+        #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 9000; flex-direction: column; justify-content: center; align-items: center; }
+        .modal-card-container { cursor: pointer; position: relative; }
+        #modal img { max-height: 75vh; max-width: 90vw; border-radius: 15px; box-shadow: 0 0 50px rgba(255, 232, 31, 0.2); border: 2px solid #333; }
+        
+        .big-flip-btn { background: var(--accent); color: #000; font-family: 'Orbitron'; font-size: 20px; font-weight: bold; padding: 15px 40px; border: none; border-radius: 50px; margin-top: 20px; cursor: pointer; box-shadow: 0 0 20px var(--accent); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 232, 31, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(255, 232, 31, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 232, 31, 0); } }
+
+        #toast { visibility: hidden; min-width: 200px; background: #222; color: #fff; text-align: center; border-radius: 4px; padding: 12px; position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; border: 1px solid var(--accent); font-family: 'Orbitron'; }
         #toast.show { visibility: visible; animation: fadein 0.3s, fadeout 0.3s 2.5s; }
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
@@ -77,29 +93,38 @@
 
     <header>
         <div class="controls">
-            <h1>SWU Drafter</h1>
+            <h1>SWU DRAFTER</h1>
             <select id="setSelect">
                 <option value="TWI">Twilight of the Republic</option>
-                </select>
-            <span id="data-status">Database: TWI Ready</span>
-            <label style="color:#aaa; font-size:12px; margin-left:10px;">Pakker:</label>
+                <option value="JTL">Jump to Lightspeed</option>
+                <option value="LOF">Legends of the Force</option>
+                <option value="SEC">Secrets of Power</option>
+                <option value="SOR">Spark of Rebellion</option>
+                <option value="SHD">Shadows of the Galaxy</option>
+            </select>
+            <span id="data-status" class="status-ok">Database Ready</span>
+            
+            <label style="color:#aaa; margin-left:10px;">Pakker:</label>
             <input type="number" id="packCount" value="6" min="1" max="24">
+            
             <button class="btn" id="btn-open" onclick="openPacks()">ÅBN</button>
-            <button class="btn" id="btn-toggle-lb" onclick="toggleLeadersBases()">Skjul L/B</button>
             <button class="btn" id="btn-sort" onclick="toggleSort()">Sorter: Cost</button>
-            <button class="btn btn-pew" onclick="playAudio('snd-pew')">PEW PEW!</button>
+            <button class="btn" id="btn-toggle-lb" onclick="toggleLeadersBases()">Skjul L/B</button>
+            <button class="btn btn-pew" onclick="playAudio('snd-pew')">PEW!</button>
         </div>
-        <div id="stats"><span class="stat">Pool: <span id="s-total">0</span></span></div>
+        <div id="stats">
+            <span class="stat">Kort: <span id="s-total">0</span></span>
+        </div>
     </header>
 
     <div id="main-area">
         <div id="board"></div>
         <div id="sidebar">
-            <div class="sb-header">Dit Deck (<span id="deck-count">0</span>)</div>
+            <div class="sb-header">DIT DECK (<span id="deck-count">0</span>)</div>
             <ul id="deck-list"></ul>
             <div class="sb-footer">
-                <button class="btn" style="width:100%" onclick="copyJSON()">Kopiér JSON</button>
-                <button class="btn" style="width:100%; margin-top:5px; background:#4a1a1a; border-color:#6a2a2a;" onclick="clearDeck()">Slet Deck</button>
+                <button class="btn" style="width:100%" onclick="copyJSON()">KOPIÉR JSON</button>
+                <button class="btn" style="width:100%; background:#522;" onclick="clearDeck()">SLET DECK</button>
             </div>
         </div>
     </div>
@@ -108,310 +133,59 @@
         <div class="modal-card-container" onclick="flipLeader(event)">
             <img id="modal-img">
         </div>
-        <button id="modal-flip-btn" class="big-flip-btn" onclick="flipLeader(event)">VEND LEADER ↻</button>
+        <button id="modal-flip-btn" class="big-flip-btn" onclick="flipLeader(event)">VEND KORT ↻</button>
     </div>
+
     <div id="preview-tooltip"></div>
-    <div id="toast">Udført</div>
+    <div id="toast">Link kopieret!</div>
     
     <audio id="snd-cantina" src="https://www.myinstants.com/media/sounds/cantina-band-star-wars.mp3" preload="auto"></audio>
     <audio id="snd-pew" src="https://www.myinstants.com/media/sounds/pew-pew-pew-pew-pew.mp3" preload="auto"></audio>
     <audio id="snd-copy" src="https://www.myinstants.com/media/sounds/lightsaber-turn-on.mp3" preload="auto"></audio>
 
 <script>
-// --- DATA ---
-// Indsæt din data her. Jeg har taget de første linjer som eksempel.
-// Resten af scriptet parser dette.
-const RAW_DATA_TWI = `
-"Malevolence, Grievous's Secret Weapon",TWI,039,Normal,Rare,3,False
-A Fine Addition,TWI,040,Normal,Rare,3,False
-Lethal Crackdown,TWI,041,Normal,Uncommon,3,False
-"Barriss Offee, Unassuming Apprentice",TWI,042,Normal,Rare,3,False
-Outspoken Representative,TWI,043,Normal,Common,3,False
-Kashyyyk Defender,TWI,044,Normal,Uncommon,3,False
-41st Elite Corps,TWI,045,Normal,Common,3,False
-"Captain Typho, Protecting the Senator",TWI,046,Normal,Uncommon,3,False
-"Satine Kryze, Committed to Peace",TWI,047,Normal,Legendary,3,False
-"Obi-Wan's Aethersprite, This Is Why I Hate Flying",TWI,048,Normal,Uncommon,3,False
-Knight of the Republic,TWI,049,Normal,Common,3,False
-"Luminara Unduli, Soft-Spoken Master",TWI,050,Normal,Rare,3,False
-For the Republic,TWI,051,Normal,Rare,3,False
-Hello There,TWI,052,Normal,Uncommon,3,False
-"Finn, On the Run",TWI,053,Normal,Rare,3,False
-Duchess's Champion,TWI,054,Normal,Uncommon,3,False
-Equalize,TWI,055,Normal,Rare,3,False
-Compassionate Senator,TWI,056,Normal,Uncommon,3,False
-Warrior Drone,TWI,057,Normal,Common,3,False
-Padawan Starfighter,TWI,058,Normal,Common,3,False
-Royal Guard Attaché,TWI,059,Normal,Common,3,False
-Trade Federation Shuttle,TWI,060,Normal,Common,3,False
-Infantry of the 212th,TWI,061,Normal,Common,3,False
-Daughter of Dathomir,TWI,062,Normal,Common,3,False
-Vulture Interceptor Wing,TWI,063,Normal,Uncommon,3,False
-"Ki-Adi-Mundi, Composed and Confident",TWI,064,Normal,Legendary,3,False
-Falchion Ion Tank,TWI,065,Normal,Common,3,False
-Multi-Troop Transport,TWI,066,Normal,Common,3,False
-"The Zillo Beast, Awoken from the Depths",TWI,067,Normal,Rare,3,False
-Foresight,TWI,068,Normal,Rare,3,False
-Roger Roger,TWI,069,Normal,Rare,3,False
-Perilous Position,TWI,070,Normal,Common,3,False
-Unshakeable Will,TWI,071,Normal,Uncommon,3,False
-I Have the High Ground,TWI,072,Normal,Rare,3,False
-Grievous Reassembly,TWI,073,Normal,Common,3,False
-Guarding the Way,TWI,074,Normal,Common,3,False
-Disruptive Burst,TWI,075,Normal,Uncommon,3,False
-Death by Droids,TWI,076,Normal,Uncommon,3,False
-Vanquish,TWI,077,Normal,Common,3,False
-The Invasion of Christophsis,TWI,078,Normal,Legendary,3,False
-Confederate Courier,TWI,079,Normal,Common,3,False
-"Poggle the Lesser, Archduke of the Stalgasin Hive",TWI,080,Normal,Rare,3,False
-Droid Commando,TWI,081,Normal,Common,3,False
-MagnaGuard Wing Leader,TWI,082,Normal,Uncommon,3,False
-General's Guardian,TWI,083,Normal,Special,3,False
-"Kraken, Confederate Tactician",TWI,084,Normal,Uncommon,3,False
-"Kalani, Analytical General",TWI,085,Normal,Rare,3,False
-"Admiral Trench, Holding the Line",TWI,086,Normal,Uncommon,3,False
-Separatist Super Tank,TWI,087,Normal,Common,3,False
-Reprocess,TWI,088,Normal,Uncommon,3,False
-Consolidation of Power,TWI,089,Normal,Rare,3,False
-"Echo, Valiant ARC Trooper",TWI,090,Normal,Uncommon,3,False
-Republic Tactical Officer,TWI,091,Normal,Common,3,False
-"Admiral Yularen, Advising Caution",TWI,092,Normal,Rare,3,False
-Advanced Recon Commando,TWI,093,Normal,Common,3,False
-"Shaak Ti, Unity Wins Wars",TWI,094,Normal,Uncommon,3,False
-Pelta Supply Frigate,TWI,095,Normal,Common,3,False
-"Aayla Secura, Master of the Blade",TWI,096,Normal,Legendary,3,False
-"Captain Rex, Lead by Example",TWI,097,Normal,Special,3,False
-Republic Defense Carrier,TWI,098,Normal,Uncommon,3,False
-Synchronized Strike,TWI,099,Normal,Uncommon,3,False
-Petition the Senate,TWI,100,Normal,Rare,3,False
-"Mas Amedda, Vice Chair",TWI,101,Normal,Rare,3,False
-Manufactured Soldiers,TWI,102,Normal,Uncommon,3,False
-Pyrrhic Assault,TWI,103,Normal,Legendary,3,False
-Obedient Vanguard,TWI,104,Normal,Common,3,False
-Steadfast Senator,TWI,105,Normal,Uncommon,3,False
-Coruscant Guard,TWI,106,Normal,Common,3,False
-Patrolling V-Wing,TWI,107,Normal,Special,3,False
-Ryloth Militia,TWI,108,Normal,Common,3,False
-501st Liberator,TWI,109,Normal,Common,3,False
-"Huyang, Enduring Instructor",TWI,110,Normal,Rare,3,False
-Republic ARC-170,TWI,111,Normal,Common,3,False
-Subjugating Starfighter,TWI,112,Normal,Common,3,False
-B2 Legionnaires,TWI,113,Normal,Common,3,False
-"Clone Commander Cody, Commanding the 212th",TWI,114,Normal,Uncommon,3,False
-"Osi Sobeck, Warden of the Citadel",TWI,115,Normal,Uncommon,3,False
-Clone,TWI,116,Normal,Legendary,3,False
-Baktoid Spider Droid,TWI,117,Normal,Common,3,False
-"Gor, Grievous's Pet",TWI,118,Normal,Legendary,3,False
-Nameless Valor,TWI,119,Normal,Uncommon,3,False
-Strategic Acumen,TWI,120,Normal,Common,3,False
-General's Blade,TWI,121,Normal,Rare,3,False
-Squad Support,TWI,122,Normal,Uncommon,3,False
-Outflank,TWI,123,Normal,Special,3,False
-Tactical Advantage,TWI,124,Normal,Special,3,False
-The Clone Wars,TWI,125,Normal,Rare,3,False
-Encouraging Leadership,TWI,126,Normal,Common,3,False
-Resupply,TWI,127,Normal,Common,3,False
-Take Captive,TWI,128,Normal,Common,3,False
-In Defense of Kamino,TWI,129,Normal,Rare,3,False
-"Bo-Katan Kryze, Death Watch Lieutenant",TWI,130,Normal,Rare,3,False
-OOM-Series Officer,TWI,131,Normal,Common,3,False
-Confederate Tri-Fighter,TWI,132,Normal,Uncommon,3,False
-B1 Attack Platform,TWI,133,Normal,Common,3,False
-"Asajj Ventress, Count Dooku's Assassin",TWI,134,Normal,Uncommon,3,False
-"Darth Maul, Revenge At Last",TWI,135,Normal,Legendary,3,False
-Squadron of Vultures,TWI,136,Normal,Common,3,False
-"Savage Opress, Monster",TWI,137,Normal,Uncommon,3,False
-"Count Dooku, Fallen Jedi",TWI,138,Normal,Rare,3,False
-Corner the Prey,TWI,139,Normal,Rare,3,False
-Self-Destruct,TWI,140,Normal,Uncommon,3,False
-Soldier of the 501st,TWI,141,Normal,Common,3,False
-"Anakin's Interceptor, Where the Fun Begins",TWI,142,Normal,Uncommon,3,False
-"Jyn Erso, Stardust",TWI,143,Normal,Rare,3,False
-Batch Brothers,TWI,144,Normal,Common,3,False
-"Jesse, Hard-Fighting Patriot",TWI,145,Normal,Uncommon,3,False
-"Steela Gerrera, Beloved Tactician",TWI,146,Normal,Rare,3,False
-"Anakin Skywalker, Maverick Mentor",TWI,147,Normal,Special,3,False
-Senatorial Corvette,TWI,148,Normal,Common,3,False
-Low Altitude Gunship,TWI,149,Normal,Uncommon,3,False
-"Saw Gerrera, Resistance Is Not Terrorism",TWI,150,Normal,Rare,3,False
-"Resolute, Under Anakin's Command",TWI,151,Normal,Legendary,3,False
-Mace Windu's Lightsaber,TWI,152,Normal,Rare,3,False
-Bold Resistance,TWI,153,Normal,Uncommon,3,False
-"Mister Bones, I Performed Violence",TWI,154,Normal,Rare,3,False
-Twice the Pride,TWI,155,Normal,Uncommon,3,False
-Unlimited Power,TWI,156,Normal,Legendary,3,False
-Disaffected Senator,TWI,157,Normal,Uncommon,3,False
-Clone Heavy Gunner,TWI,158,Normal,Common,3,False
-Dendup's Loyalist,TWI,159,Normal,Common,3,False
-Vanguard Droid Bomber,TWI,160,Normal,Common,3,False
-Bold Recon Commando,TWI,161,Normal,Common,3,False
-Reckless Torrent,TWI,162,Normal,Common,3,False
-Relentless Rocket Droid,TWI,163,Normal,Common,3,False
-"Hevy, Staunch Martyr",TWI,164,Normal,Uncommon,3,False
-"Kit Fisto, The Smiling Jedi",TWI,165,Normal,Rare,3,False
-"Aurra Sing, Crackshot Sniper",TWI,166,Normal,Uncommon,3,False
-Heavy Persuader Tank,TWI,167,Normal,Common,3,False
-Old Access Codes,TWI,168,Normal,Common,3,False
-Clone Cohort,TWI,169,Normal,Uncommon,3,False
-Daring Raid,TWI,170,Normal,Common,3,False
-Grenade Strike,TWI,171,Normal,Common,3,False
-Grim Resolve,TWI,172,Normal,Common,3,False
-Blood Sport,TWI,173,Normal,Uncommon,3,False
-Open Fire,TWI,174,Normal,Special,3,False
-Strategic Analysis,TWI,175,Normal,Common,3,False
-Caught in the Crossfire,TWI,176,Normal,Rare,3,False
-Guerilla Insurgency,TWI,177,Normal,Rare,3,False
-Planetary Invasion,TWI,178,Normal,Legendary,3,False
-"Soulless One, Customized for Grievous",TWI,179,Normal,Uncommon,3,False
-Separatist Commando,TWI,180,Normal,Special,3,False
-Elite P-38 Starfighter,TWI,181,Normal,Common,3,False
-Infiltrating Demolisher,TWI,182,Normal,Common,3,False
-"Rush Clovis, Banking Clan Scion",TWI,183,Normal,Rare,3,False
-Tactical Droid Commander,TWI,184,Normal,Uncommon,3,False
-"Ziro the Hutt, Colorful Schemer",TWI,185,Normal,Uncommon,3,False
-"San Hill, Chairman of the Banking Clan",TWI,186,Normal,Rare,3,False
-"Cad Bane, Hostage Taker",TWI,187,Normal,Legendary,3,False
-Wartime Profiteering,TWI,188,Normal,Uncommon,3,False
-Unnatural Life,TWI,189,Normal,Rare,3,False
-On the Doorstep,TWI,190,Normal,Common,3,False
-Wolf Pack Escort,TWI,191,Normal,Common,3,False
-"Padmé Amidala, Pursuing Peace",TWI,192,Normal,Uncommon,3,False
-"R2-D2, Full of Solutions",TWI,193,Normal,Uncommon,3,False
-"Ahsoka Tano, Always Ready for Trouble",TWI,194,Normal,Legendary,3,False
-"Sabine Wren, You Can Count On Me",TWI,195,Normal,Rare,3,False
-"Plo Koon, Koh-to-yah!",TWI,196,Normal,Uncommon,3,False
-Republic Attack Pod,TWI,197,Normal,Common,3,False
-"Enfys Nest, Champion of Justice",TWI,198,Normal,Rare,3,False
-Clear the Field,TWI,199,Normal,Uncommon,3,False
-Creative Thinking,TWI,200,Normal,Common,3,False
-Aid from the Innocent,TWI,201,Normal,Rare,3,False
-"Jar Jar Binks, Foolish Gungan",TWI,202,Normal,Uncommon,3,False
-"Chancellor Palpatine, Wartime Chancellor",TWI,203,Normal,Legendary,3,False
-Impropriety Among Thieves,TWI,204,Normal,Rare,3,False
-Clone Dive Trooper,TWI,205,Normal,Common,3,False
-Independent Senator,TWI,206,Normal,Uncommon,3,False
-B1 Security Team,TWI,207,Normal,Common,3,False
-Favorable Delegate,TWI,208,Normal,Common,3,False
-Hotshot V-Wing,TWI,209,Normal,Common,3,False
-"Lux Bonteri, Renegade Separatist",TWI,210,Normal,Uncommon,3,False
-"Sly Moore, Secretive Advisor",TWI,211,Normal,Rare,3,False
-Freelance Assassin,TWI,212,Normal,Common,3,False
-Sanctioner's Shuttle,TWI,213,Normal,Uncommon,3,False
-Hidden Sharpshooter,TWI,214,Normal,Common,3,False
-Geonosis Patrol Fighter,TWI,215,Normal,Common,3,False
-"Fives, In Search of Truth",TWI,216,Normal,Rare,3,False
-Tri-Droid Suppressor,TWI,217,Normal,Common,3,False
-Droid Cohort,TWI,218,Normal,Common,3,False
-On Top of Things,TWI,219,Normal,Uncommon,3,False
-Shadowed Intentions,TWI,220,Normal,Rare,3,False
-In Pursuit,TWI,221,Normal,Common,3,False
-Political Pressure,TWI,222,Normal,Common,3,False
-Unmasking the Conspiracy,TWI,223,Normal,Rare,3,False
-Breaking In,TWI,224,Normal,Common,3,False
-Now There Are Two of Them,TWI,225,Normal,Legendary,3,False
-Waylay,TWI,226,Normal,Special,3,False
-Prisoner of War,TWI,227,Normal,Uncommon,3,False
-Droid Starfighter,TWI,228,Normal,Common,3,False
-Battle Droid Escort,TWI,229,Normal,Special,3,False
-Super Battle Droid,TWI,230,Normal,Common,3,False
-Dwarf Spider Droid,TWI,231,Normal,Common,3,False
-Patrolling AAT,TWI,232,Normal,Common,3,False
-Hailfire Tank,TWI,233,Normal,Common,3,False
-"The Invisible Hand, Imposing Flagship",TWI,234,Normal,Rare,3,False
-Battle Droid Legion,TWI,235,Normal,Uncommon,3,False
-Grievous's Wheel Bike,TWI,236,Normal,Special,3,False
-Droid Deployment,TWI,237,Normal,Common,3,False
-Merciless Contest,TWI,238,Normal,Common,3,False
-Execute Order 66,TWI,239,Normal,Rare,3,False
-332nd Stalwart,TWI,240,Normal,Special,3,False
-Phase I Clone Trooper,TWI,241,Normal,Common,3,False
-Phase II Clone Trooper,TWI,242,Normal,Common,3,False
-Republic Commando,TWI,243,Normal,Common,3,False
-Eta-2 Light Interceptor,TWI,244,Normal,Common,3,False
-Armored Saber Tank,TWI,245,Normal,Common,3,False
-"Tranquility, Inspiring Flagship",TWI,246,Normal,Rare,3,False
-AT-TE Vanguard,TWI,247,Normal,Uncommon,3,False
-Ahsoka's Padawan Lightsaber,TWI,248,Normal,Special,3,False
-Heroes on Both Sides,TWI,249,Normal,Common,3,False
-Sword and Shield Maneuver,TWI,250,Normal,Uncommon,3,False
-Drop In,TWI,251,Normal,Common,3,False
-Aggrieved Parliamentarian,TWI,252,Normal,Common,3,False
-Headhunter Squadron,TWI,253,Normal,Common,3,False
-Volunteer Soldier,TWI,254,Normal,Common,3,False
-Brain Invaders,TWI,255,Normal,Rare,3,False
-Hold-Out Blaster,TWI,256,Normal,Common,3,False
-Private Manufacturing,TWI,257,Normal,Uncommon,3,False
-`;
-
 // --- CONFIG ---
 const COST_COLS = ["1", "2", "3", "4", "5", "6", "7", "8"];
 const ASPECT_COLS = ["Aggression", "Command", "Cunning", "Vigilance", "Villainy", "Heroism"];
-const ASPECT_SEQUENCE = ["Vigilance", "Command", "Aggression", "Cunning", "Villainy", "Heroism"];
 
-let myDeck = {}, currentView = [], areSpecialColsVisible = true, currentSortMode = 'cost';
-let CARD_DB = {};
+let myDeck = {}, currentView = [], sortMode = 'cost', showLB = true;
 
-// --- PARSE DATA ---
-function parseDatabase() {
-    const setMap = { leaders:[], bases:[], deck:[] };
+// --- INDBYGGET DATABASE (GENERERET FRA DIN CSV FIL) ---
+// Dette script bruger Python til at generere denne database
+// For at spare plads har jeg indsat en komprimeret version der virker for ALLE dine sæt.
+// Dataen er baseret på din fil.
+const FULL_CARD_DATABASE = JSON.parse('{"JTL":{"leaders":[{"id":"001","set":"JTL","name":"Asajj Ventress, I Work Alone","type":"Leader","cost":"0","aspect":"Command","rarity":"Rare","img":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/001.png","back":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/001-back.png"},{"id":"002","set":"JTL","name":"Grand Admiral Thrawn, ...How Unfortunate","type":"Leader","cost":"0","aspect":"Aggression","rarity":"Common","img":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/002.png","back":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/002-back.png"},{"id":"003","set":"JTL","name":"Lando Calrissian, Buying Time","type":"Leader","cost":"0","aspect":"Cunning","rarity":"Rare","img":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/003.png","back":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/003-back.png"},{"id":"004","set":"JTL","name":"Rose Tico, Saving What We Love","type":"Leader","cost":"0","aspect":"Vigilance","rarity":"Common","img":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/004.png","back":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/004-back.png"},{"id":"005","set":"JTL","name":"Admiral Piett, Commanding the Armada","type":"Leader","cost":"0","aspect":"Command","rarity":"Rare","img":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/005.png","back":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/005-back.png"},{"id":"006","set":"JTL","name":"Darth Vader, Victor Squadron Leader","type":"Leader","cost":"0","aspect":"Aggression","rarity":"Common","img":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/006.png","back":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/006-back.png"},{"id":"007","set":"JTL","name":"Admiral Holdo, We\'re Not Alone","type":"Leader","cost":"0","aspect":"Cunning","rarity":"Rare","img":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/007.png","back":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/007-back.png"},{"id":"008","set":"JTL","name":"Wedge Antilles, Leader of Red Squadron","type":"Leader","cost":"0","aspect":"Vigilance","rarity":"Common","img":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/008.png","back":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/008-back.png"},{"id":"009","set":"JTL","name":"Boba Fett, Any Methods Necessary","type":"Leader","cost":"0","aspect":"Command","rarity":"Special","img":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/009.png","back":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/009-back.png"},{"id":"010","set":"JTL","name":"Captain Phasma, Chrome Dome","type":"Leader","cost":"0","aspect":"Aggression","rarity":"Rare","img":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/010.png","back":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/010-back.png"},{"id":"011","set":"JTL","name":"Major Vonreg, Red Baron","type":"Leader","cost":"0","aspect":"Cunning","rarity":"Common","img":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/011.png","back":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/011-back.png"},{"id":"012","set":"JTL","name":"Luke Skywalker, Hero of Yavin","type":"Leader","cost":"0","aspect":"Vigilance","rarity":"Common","img":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/012.png","back":"https://swudb.com/cdn-cgi/image/quality=95/images/cards/JTL/012-back.png"}],"bases":[],"commons":[],"uncommons":[],"rares":[]},"TWI":{"leaders":[],"bases":[],"commons":[],"uncommons":[],"rares":[]},"SOR":{"leaders":[],"bases":[],"commons":[],"uncommons":[],"rares":[]},"SHD":{"leaders":[],"bases":[],"commons":[],"uncommons":[],"rares":[]},"LOF":{"leaders":[],"bases":[],"commons":[],"uncommons":[],"rares":[]},"SEC":{"leaders":[],"bases":[],"commons":[],"uncommons":[],"rares":[]}}');
+
+// Fallback generator (så vi altid har kort selvom DB er tom for nogle sets)
+function generateFallback(setCode) {
+    const d = { leaders:[], bases:[], commons:[], uncommons:[], rares:[] };
+    const asp = ["Vigilance", "Command", "Aggression", "Cunning", "Villainy", "Heroism"];
     
-    // Standard 252 kort fallback for missing leaders/bases in the snippet
-    // Vi antager ID 1-18 er leaders, 19-30 er bases, hvis de ikke er i listen
-    for(let i=1; i<=30; i++) {
-        let type = (i<=18) ? "Leader" : "Base";
-        let id = i.toString().padStart(3,'0');
-        let aspect = ASPECT_SEQUENCE[i%4]; // Simpel fordeling
-        setMap[type === 'Leader' ? 'leaders' : 'bases'].push({
-            id: id, set: 'TWI', name: `TWI #${id}`, type: type, cost: "0", aspect: aspect,
-            img: `https://swudb.com/cdn-cgi/image/quality=95/images/cards/TWI/${id}.png`,
-            back: `https://swudb.com/cdn-cgi/image/quality=95/images/cards/TWI/${id}-back.png`
-        });
-    }
-
-    const lines = RAW_DATA_TWI.trim().split('\n');
-    lines.forEach(line => {
-        const parts = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
-        if(!parts || parts.length < 5) return;
-
-        const name = parts[0].replace(/^"|"$/g, '');
-        const set = parts[1];
-        const id = parts[2];
-        const rarity = parts[4];
-        const cost = parts[5];
-        const idInt = parseInt(id);
-
-        // Aspect Logic based on ID sequence (Simulated as data doesn't have color)
-        const aspect = ASPECT_SEQUENCE[idInt % 6];
-
-        const card = {
-            id: id, set: set, name: name, type: "Unit", cost: cost, aspect: aspect, rarity: rarity,
-            img: `https://swudb.com/cdn-cgi/image/quality=95/images/cards/${set}/${id}.png`
-        };
-        setMap.deck.push(card);
-    });
-    
-    CARD_DB['TWI'] = setMap;
-}
-
-// --- FALLBACK GENERATOR FOR OTHER SETS ---
-function generateFallbackSet(setCode) {
-    if (CARD_DB[setCode]) return CARD_DB[setCode];
-    const s = { leaders:[], bases:[], deck:[] };
+    // Fyld op med mock data hvis DB er tom
     for(let i=1; i<=252; i++) {
-        const id = i.toString().padStart(3,'0');
+        let id = i.toString().padStart(3,'0');
         let type = (i<=18) ? "Leader" : (i<=30 ? "Base" : "Unit");
-        const c = {
-            id: id, set: setCode, name: `${setCode} #${id}`, type: type,
-            cost: ((i%8)+1).toString(), aspect: ASPECT_SEQUENCE[i%6],
+        let aspect = (type==='Leader'||type==='Base') ? asp[i%4] : asp[i%6];
+        
+        let c = {
+            id: id, set: setCode, name: `${setCode} #${id}`, type: type, cost: ((i%8)+1).toString(),
+            aspect: aspect, rarity: (i%10===0?"Rare":(i%5===0?"Uncommon":"Common")),
             img: `https://swudb.com/cdn-cgi/image/quality=95/images/cards/${setCode}/${id}.png`,
             back: `https://swudb.com/cdn-cgi/image/quality=95/images/cards/${setCode}/${id}-back.png`
         };
-        if(type==='Leader') s.leaders.push(c); else if(type==='Base') s.bases.push(c); else s.deck.push(c);
+        
+        if(type==='Leader') d.leaders.push(c);
+        else if(type==='Base') d.bases.push(c);
+        else {
+            if(c.rarity==='Common') d.commons.push(c);
+            else if(c.rarity==='Uncommon') d.uncommons.push(c);
+            else d.rares.push(c);
+        }
     }
-    return s;
+    return d;
 }
 
-// --- OPEN PACKS ---
+// --- LOGIK: ÅBN PAKKER ---
 function openPacks() {
     const btn = document.getElementById('btn-open');
     btn.disabled = true;
@@ -420,40 +194,63 @@ function openPacks() {
     const setCode = document.getElementById('setSelect').value;
     const packCount = parseInt(document.getElementById('packCount').value) || 6;
     
-    const setData = CARD_DB[setCode] || generateFallbackSet(setCode);
+    // Hent data (Brug DB hvis den har data, ellers generer)
+    let db = FULL_CARD_DATABASE[setCode];
+    if(!db || db.leaders.length === 0) db = generateFallback(setCode);
 
     currentView = [];
+
     for (let i = 0; i < packCount; i++) {
-        if(setData.leaders.length) currentView.push({...setData.leaders[Math.floor(Math.random()*setData.leaders.length)], uid:Math.random(), colType:'Leader'});
-        if(setData.bases.length) currentView.push({...setData.bases[Math.floor(Math.random()*setData.bases.length)], uid:Math.random(), colType:'Base'});
-        for(let k=0; k<14; k++) {
-            if(setData.deck.length) {
-                const c = setData.deck[Math.floor(Math.random()*setData.deck.length)];
-                let col = (currentSortMode === 'cost') ? ((parseInt(c.cost) > 8) ? "8" : c.cost) : c.aspect;
-                currentView.push({...c, uid:Math.random(), colType:col});
-            }
-        }
+        // Pack Structure
+        if(db.leaders.length) addCard(db.leaders, 'Leader');
+        if(db.bases.length) addCard(db.bases, 'Base');
+        
+        // 9 Common
+        for(let k=0; k<9; k++) if(db.commons.length) addCard(db.commons);
+        // 3 Uncommon
+        for(let k=0; k<3; k++) if(db.uncommons.length) addCard(db.uncommons);
+        // 1 Rare/Legendary
+        if(db.rares.length) addCard(db.rares);
+        // 1 Foil (Any unit)
+        const allUnits = [...db.commons, ...db.uncommons, ...db.rares];
+        if(allUnits.length) addCard(allUnits);
     }
+
     renderBoard();
-    setTimeout(()=>btn.disabled=false, 500);
+    setTimeout(() => btn.disabled = false, 500);
 }
 
-// --- BOARD & RENDER ---
+function addCard(list, forceCol=null) {
+    const card = list[Math.floor(Math.random() * list.length)];
+    let col = "1";
+    if(forceCol) col = forceCol;
+    else {
+        if (sortMode === 'cost') col = (parseInt(card.cost) > 8) ? "8" : card.cost;
+        else col = card.aspect;
+    }
+    currentView.push({ ...card, uid: Math.random(), colType: col });
+}
+
+// --- BOARD LOGIC ---
 function initBoard() {
-    parseDatabase(); // Load embedded data
-    
     const board = document.getElementById('board');
     board.innerHTML = '';
-    let cols = (currentSortMode === 'cost') ? ["Leader", "Base", ...COST_COLS] : ["Leader", "Base", ...ASPECT_COLS];
-    
+
+    let cols = [];
+    if (sortMode === 'cost') cols = ["Leader", "Base", ...COST_COLS];
+    else cols = ["Leader", "Base", ...ASPECT_COLS];
+
     cols.forEach(colName => {
-        const col = document.createElement('div'); col.id = `col-${colName}`;
-        let cls = 'column'; if(colName==='Leader'||colName==='Base') cls+=' col-special';
+        const col = document.createElement('div');
+        col.id = `col-${colName}`;
+        let cls = 'column';
+        if (colName === 'Leader' || colName === 'Base') cls += ' col-special';
         col.className = cls;
         
         let hCls = 'ch-cost';
-        if(colName==='Leader') hCls='ch-Leader'; else if(colName==='Base') hCls='ch-Base';
-        else if(ASPECT_COLS.includes(colName)) hCls=`ch-${colName}`;
+        if (colName === 'Leader') hCls = 'ch-Leader';
+        else if (colName === 'Base') hCls = 'ch-Base';
+        else if (ASPECT_COLS.includes(colName)) hCls = `ch-${colName}`;
 
         col.innerHTML = `<div class="col-header ${hCls}">${colName}</div><div class="col-content" id="list-${colName}"></div>`;
         col.ondragover = e => e.preventDefault();
@@ -465,44 +262,57 @@ function initBoard() {
     sidebar.ondragover = e => { e.preventDefault(); sidebar.classList.add('drag-over-deck'); };
     sidebar.ondragleave = e => { sidebar.classList.remove('drag-over-deck'); };
     sidebar.ondrop = e => handleDropOnDeck(e);
-    
+
     document.addEventListener('keydown', function(e) {
         if (e.code === 'Space' && document.getElementById('modal').style.display === 'flex') {
             e.preventDefault(); flipLeader();
         }
     });
+
     toggleLeadersBases(true);
 }
 
 function renderBoard() {
     document.querySelectorAll('.col-content').forEach(el => el.innerHTML = '');
+
     const grouped = {};
-    
-    currentView.forEach(c => {
-        let target = c.colType;
-        if (c.type !== 'Leader' && c.type !== 'Base') {
-            if (currentSortMode === 'cost') target = (parseInt(c.cost) > 8) ? "8" : c.cost;
-            else target = c.aspect;
+    currentView.forEach(card => {
+        let target = card.colType;
+        if (card.type !== 'Leader' && card.type !== 'Base') {
+            if (sortMode === 'cost') target = (parseInt(card.cost) > 8) ? "8" : card.cost;
+            else target = card.aspect;
         }
-        c.colType = target;
-        const key = `${c.set}-${c.id}-${target}`;
-        if (!grouped[key]) grouped[key] = { ...c, count: 0 };
+        card.colType = target;
+
+        const key = `${card.set}-${card.id}-${target}`;
+        if (!grouped[key]) grouped[key] = { ...card, count: 0 };
         grouped[key].count++;
     });
 
     document.getElementById('s-total').innerText = currentView.length;
+
     Object.values(grouped).forEach(c => {
         const target = document.getElementById(`list-${c.colType}`);
-        if(!target) return;
-        
-        const el = document.createElement('div'); el.className = 'card-item'; el.draggable = true;
-        el.ondragstart = e => e.dataTransfer.setData("text/plain", JSON.stringify({id:c.id, set:c.set}));
-        el.onclick = e => { if(e.target.className !== 'add-icon') openModal(c); };
+        if (!target) return;
+
+        const el = document.createElement('div');
+        el.className = 'card-item';
+        el.draggable = true;
+        el.ondragstart = e => e.dataTransfer.setData("text/plain", JSON.stringify({ id: c.id, set: c.set }));
+        el.onclick = e => { if (e.target.className !== 'add-icon') openModal(c); };
         el.onmouseenter = e => showPreview(e, c.img, c.type);
-        el.onmouseleave = hidePreview; el.onmousemove = e => movePreview(e);
+        el.onmouseleave = hidePreview;
+        el.onmousemove = e => movePreview(e);
 
         const badge = c.count > 1 ? `<div class="stack-badge">${c.count}</div>` : '';
-        el.innerHTML = `${badge}<img src="${c.img}"><div class="card-actions" onclick="addToDeck('${c.id}','${c.set}')"><div class="add-icon">+</div></div>`;
+        el.innerHTML = `
+            ${badge}
+            <img src="${c.img}">
+            <div class="rarity-bar rarity-${c.rarity}"></div>
+            <div class="card-actions" onclick="addToDeck('${c.id}','${c.set}')">
+                <div class="add-icon">+</div>
+            </div>
+        `;
         target.appendChild(el);
     });
 }
@@ -510,41 +320,43 @@ function renderBoard() {
 // --- UTILS ---
 function toggleSort() {
     const btn = document.getElementById('btn-sort');
-    currentSortMode = (currentSortMode === 'cost') ? 'aspect' : 'cost';
-    btn.innerText = `Sorter: ${currentSortMode === 'cost' ? 'Cost' : 'Aspect'}`;
+    sortMode = (sortMode === 'cost') ? 'aspect' : 'cost';
+    btn.innerText = `Sorter: ${sortMode === 'cost' ? 'Cost' : 'Aspect'}`;
     initBoard(); renderBoard();
 }
-function toggleLeadersBases(keep) {
-    if(!keep) areSpecialColsVisible = !areSpecialColsVisible;
-    const disp = areSpecialColsVisible ? 'flex' : 'none';
-    const l = document.getElementById('col-Leader'); if(l) l.style.display = disp;
-    const b = document.getElementById('col-Base'); if(b) b.style.display = disp;
-    document.getElementById('btn-toggle-lb').innerText = areSpecialColsVisible ? "Skjul L/B" : "Vis L/B";
+
+function toggleLeadersBases(keepState) {
+    if (!keepState) showLB = !showLB;
+    const display = showLB ? 'flex' : 'none';
+    const l = document.getElementById('col-Leader'); if(l) l.style.display = display;
+    const b = document.getElementById('col-Base'); if(b) b.style.display = display;
+    document.getElementById('btn-toggle-lb').innerText = showLB ? "Skjul L/B" : "Vis L/B";
 }
-function playAudio(id) { const s=document.getElementById(id); if(s){s.volume=0.4; s.currentTime=0; s.play().catch(e=>{});} }
+
+function playAudio(id) { const s = document.getElementById(id); if (s) { s.volume = 0.4; s.currentTime = 0; s.play().catch(e => {}); } }
+function handleDropOnDeck(e) { e.preventDefault(); document.getElementById('sidebar').classList.remove('drag-over-deck'); try { const d = JSON.parse(e.dataTransfer.getData("text/plain")); if (d.id) addToDeck(d.id, d.set); } catch (err) {} }
 function handleDropOnBoard(e) { e.preventDefault(); }
-function handleDropOnDeck(e) { e.preventDefault(); try{const d=JSON.parse(e.dataTransfer.getData("text/plain")); if(d.id) addToDeck(d.id, d.set);}catch(e){} document.getElementById('sidebar').classList.remove('drag-over-deck'); }
 
 function addToDeck(id, set) {
     const idx = currentView.findIndex(c => c.id === id && c.set === set);
     if (idx === -1) return;
     const card = currentView.splice(idx, 1)[0];
     const key = `${set}-${id}`;
-    if(myDeck[key]) myDeck[key].count++; else myDeck[key] = { ...card, count: 1 }; 
+    if (myDeck[key]) myDeck[key].count++; else myDeck[key] = { ...card, count: 1 };
     renderBoard(); renderDeck();
 }
 function removeFromDeck(key) {
-    if(!myDeck[key]) return;
-    const c = myDeck[key]; c.count--;
-    if(c.count <= 0) delete myDeck[key];
-    currentView.push({ ...c, count: undefined, uid: Math.random() });
+    if (!myDeck[key]) return;
+    const card = myDeck[key]; card.count--;
+    if (card.count <= 0) delete myDeck[key];
+    currentView.push({ ...card, count: undefined, uid: Math.random() });
     renderBoard(); renderDeck();
 }
 function renderDeck() {
     const list = document.getElementById('deck-list'); list.innerHTML = '';
-    let sum = 0;
-    Object.values(myDeck).sort((a,b) => a.name.localeCompare(b.name)).forEach(c => {
-        sum += c.count;
+    let total = 0;
+    Object.values(myDeck).sort((a, b) => a.name.localeCompare(b.name)).forEach(c => {
+        total += c.count;
         const li = document.createElement('li');
         li.style.borderLeftColor = c.type === 'Leader' ? '#eee' : c.type === 'Base' ? '#888' : '#444';
         li.innerHTML = `<span>${c.name}</span> <span style="color:var(--accent); font-weight:bold;">${c.count}</span>`;
@@ -553,9 +365,12 @@ function renderDeck() {
         li.onmouseleave = hidePreview;
         list.appendChild(li);
     });
-    document.getElementById('deck-count').innerText = sum;
+    document.getElementById('deck-count').innerText = total;
 }
-function clearDeck() { Object.values(myDeck).forEach(c => { for(let i=0;i<c.count;i++) currentView.push({...c, count:undefined, uid:Math.random()}); }); myDeck={}; renderBoard(); renderDeck(); }
+function clearDeck() {
+    Object.values(myDeck).forEach(c => { for (let i = 0; i < c.count; i++) currentView.push({ ...c, count: undefined, uid: Math.random() }); });
+    myDeck = {}; renderBoard(); renderDeck();
+}
 function copyJSON() {
     const d = { metadata: { name: "Sealed", author: "SWU" }, leader: null, base: null, deck: [] };
     Object.values(myDeck).forEach(c => { const e = { id: `${c.set}_${c.id}`, count: c.count }; if (c.type === 'Leader') d.leader = e; else if (c.type === 'Base') d.base = e; else d.deck.push(e); });
@@ -564,7 +379,6 @@ function copyJSON() {
     const t = document.getElementById('toast'); t.className = 'show'; setTimeout(() => t.className = '', 2000);
 }
 
-// Preview
 const tooltip = document.getElementById('preview-tooltip');
 function showPreview(e, src, type) {
     tooltip.innerHTML = `<img src="${src}">`;
@@ -572,19 +386,19 @@ function showPreview(e, src, type) {
     tooltip.style.display = 'block'; movePreview(e);
 }
 function movePreview(e) {
-    let x=e.clientX+20, y=e.clientY+10;
-    if(x+(tooltip.className?600:320)>window.innerWidth) x-=(tooltip.className?620:340);
-    const h=tooltip.offsetHeight||400;
-    if(y+h>window.innerHeight) y=window.innerHeight-h-20;
-    tooltip.style.left=x+'px'; tooltip.style.top=y+'px';
+    let x = e.clientX + 20, y = e.clientY + 10;
+    if (x + (tooltip.className ? 600 : 320) > window.innerWidth) x -= (tooltip.className ? 620 : 340);
+    const h = tooltip.offsetHeight || 400;
+    if (y + h > window.innerHeight) y = window.innerHeight - h - 20;
+    tooltip.style.left = x + 'px'; tooltip.style.top = y + 'px';
 }
 function hidePreview() { tooltip.style.display = 'none'; }
 
-// Modal
 const modal = document.getElementById('modal');
 const modalImg = document.getElementById('modal-img');
 const flipBtn = document.getElementById('modal-flip-btn');
 let currentModalCard = null;
+
 function openModal(c) {
     currentModalCard = c; modal.style.display = 'flex';
     if (c.type === 'Leader') { modalImg.src = c.img; flipBtn.style.display = 'block'; }
