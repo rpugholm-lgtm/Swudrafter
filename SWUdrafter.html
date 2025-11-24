@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SWU: Ultimate Drafter (Final Fix)</title>
+    <title>SWU: Ultimate Drafter (Offline Ready)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 
@@ -37,7 +37,6 @@
         button.btn { background: #333; color: white; border: 1px solid #555; padding: 5px 15px; font-family: 'Orbitron'; cursor: pointer; transition: 0.2s; border-radius: 4px; font-size: 12px; text-transform: uppercase; }
         button.btn:hover { border-color: var(--accent); color: var(--accent); background: #000; }
         button.btn:disabled { color: #555; border-color: #333; cursor: wait; opacity: 0.7; }
-        
         button.btn-pew { background: #822; border-color: #a44; color: #fff; font-weight: bold; }
         button.btn-pew:hover { background: #b33; border-color: #f66; color: #fff; transform: scale(1.1); }
 
@@ -77,7 +76,6 @@
         .col-content { flex: 1; overflow-y: auto; overflow-x: visible; padding: 15px 10px 50px 10px; display: flex; flex-direction: column; align-items: center; }
         #list-Pool { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; align-content: start; align-items: start; }
 
-        /* --- SIDEBAR --- */
         #sidebar { width: 280px; background: #111; border-left: 1px solid #333; display: flex; flex-direction: column; z-index: 100; transition: all 0.2s; position: relative; flex-shrink: 0; }
         #sidebar.drag-over-deck { background: #1a1a1a; box-shadow: inset 0 0 20px var(--success-green); border-left: 2px solid var(--success-green); }
         #sidebar.drag-over-deck::after { content: 'SLIP FOR AT TILFØJE'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--success-green); font-family: 'Orbitron'; font-weight: bold; width: 100%; text-align: center; pointer-events: none; }
@@ -87,24 +85,20 @@
         #deck-list li:hover { background: #444; color: #fff; }
         .sb-footer { padding: 10px; border-top: 1px solid #333; background: #181818; }
 
-        /* --- CARD ITEM --- */
         .card-item { position: relative; background: #000; border-radius: 6px; cursor: grab; box-shadow: 0 -2px 5px rgba(0,0,0,0.5); transition: transform 0.1s ease-out, margin 0.2s; display: flex; flex-direction: column; width: 100%; z-index: 1; }
         .col-content:not(#list-Pool):not(#list-Leader):not(#list-Base) .card-item:not(:first-child) { margin-top: -135px; }
         #list-Pool .card-item, #list-Leader .card-item, #list-Base .card-item { margin-top: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.6); }
         .card-item:hover { transform: scale(1.35) translateY(-10px); z-index: 1000 !important; box-shadow: 0 10px 30px rgba(0,0,0,0.9); border: 1px solid var(--accent); }
         .card-item img { width: 100%; height: auto; display: block; border-radius: 6px; pointer-events: none; }
-
         .card-actions { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); display: none; align-items: center; justify-content: center; border-radius: 6px; }
         .card-item:hover .card-actions { display: flex; }
         .add-icon { font-size: 24px; color: #fff; font-weight: bold; text-shadow: 0 0 10px #000; pointer-events: none; background: rgba(0,0,0,0.6); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
         .stack-badge { position: absolute; top: 5px; right: 5px; background: var(--accent); color: #000; width: 20px; height: 20px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 11px; font-weight: 900; border: 2px solid #000; z-index: 5; box-shadow: 2px 2px 5px #000; }
 
-        /* --- PREVIEW TOOLTIP --- */
         #preview-tooltip { position: fixed; display: none; z-index: 5000; pointer-events: none; background: rgba(0,0,0,0.8); border: 2px solid #555; border-radius: 8px; padding: 0; box-shadow: 0 10px 40px rgba(0,0,0,0.9); overflow: hidden; }
         #preview-tooltip img { width: 320px; display: block; border-radius: 6px; }
         #preview-tooltip.big-preview img { width: auto; height: 60vh; max-width: none; }
 
-        /* --- MODAL --- */
         #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; justify-content:center; align-items:center; flex-direction: column; }
         .modal-card-container { position: relative; margin-bottom: 20px; cursor: pointer; }
         .modal-card-container:hover::after { content: '↻'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 100px; color: rgba(255, 255, 255, 0.7); text-shadow: 0 0 20px #000; pointer-events: none; }
@@ -148,6 +142,7 @@
 
     <div id="main-area">
         <div id="board"></div>
+
         <div id="sidebar">
             <div class="sb-header">Dit Deck (<span id="deck-count">0</span>)</div>
             <ul id="deck-list"></ul>
@@ -174,10 +169,48 @@
     <audio id="snd-copy" src="https://www.myinstants.com/media/sounds/lightsaber-turn-on.mp3" preload="auto"></audio>
 
 <script>
+// --- CONFIG ---
 const COST_COLS = ["1", "2", "3", "4", "5", "6", "7", "8"];
 const ASPECT_COLS = ["Aggression", "Command", "Cunning", "Vigilance", "Villainy", "Heroism"];
+
+// --- MANUAL DATA OVERRIDE (For at sikre at Leaders/Bases altid virker, selv hvis API fejler) ---
+const MANUAL_DATA = {
+    "SOR": {
+        "001": {t:"Leader", a:"Vigilance"}, "002": {t:"Leader", a:"Vigilance"}, "003": {t:"Leader", a:"Command"},
+        "004": {t:"Leader", a:"Command"}, "005": {t:"Leader", a:"Aggression"}, "006": {t:"Leader", a:"Aggression"},
+        "007": {t:"Leader", a:"Cunning"}, "008": {t:"Leader", a:"Cunning"}, "009": {t:"Leader", a:"Vigilance"},
+        "010": {t:"Leader", a:"Villainy"}, "015": {t:"Leader", a:"Heroism"},
+        "019": {t:"Base", a:"Vigilance"}, "020": {t:"Base", a:"Command"}, "023": {t:"Base", a:"Aggression"}
+    },
+    // SEC Special handling (Her var der fejl før)
+    "SEC": {
+        "001": {t:"Leader", a:"Vigilance"}, "005": {t:"Leader", a:"Command"},
+        "015": {t:"Leader", a:"Heroism"}, // Ahsoka
+        "019": {t:"Base", a:"Vigilance"}, "020": {t:"Base", a:"Command"}, 
+        "025": {t:"Unit", a:"Vigilance"}, "026": {t:"Unit", a:"Command"} // Sikrer at disse ikke bliver baser
+    }
+};
+
+// --- APP STATE ---
 let myDeck = {}, currentView = [], areSpecialColsVisible = true, currentSortMode = 'cost', CARD_DATABASE = {}; 
 
+// --- HELPER: GUESS TYPE ---
+function getProbableType(idInt, setCode) {
+    // Tjek manuel data først
+    const idStr = idInt.toString().padStart(3,'0');
+    if(MANUAL_DATA[setCode] && MANUAL_DATA[setCode][idStr]) return MANUAL_DATA[setCode][idStr].t;
+
+    if (setCode === "SEC") {
+        if (idInt <= 18) return "Leader";
+        if (idInt >= 19 && idInt <= 24) return "Base"; 
+        return "Unit"; 
+    }
+    if (idInt <= 18) return "Leader";
+    if (idInt >= 19 && idInt <= 30) return "Base";
+    return "Unit"; 
+}
+
+// --- API HELPERS ---
 function mapApiType(cardData) {
     if (!cardData.Type) return "Unit";
     const t = cardData.Type.toLowerCase();
@@ -193,37 +226,35 @@ function mapApiAspect(cardData) {
     return aspects.length > 0 ? aspects[0] : "Villainy";
 }
 
+// --- DATA FETCHING ---
 async function fetchSetData(setCode) {
     const statusEl = document.getElementById('data-status');
     const lowerSet = setCode.toLowerCase();
-    
+
     if (CARD_DATABASE[setCode]) return CARD_DATABASE[setCode];
-    const cacheKey = `SWU_V4_${setCode}`; // Bumped version
+
+    const cacheKey = `SWU_V5_${setCode}`;
     const cached = localStorage.getItem(cacheKey);
     if (cached) {
-        console.log("Loaded from Cache");
         CARD_DATABASE[setCode] = JSON.parse(cached);
         return CARD_DATABASE[setCode];
     }
 
-    statusEl.innerText = "Henter (Proxy)...";
+    statusEl.innerText = "Henter Data (Proxy)...";
     statusEl.className = "status-loading";
 
     try {
-        // ULTRA ROBUST PROXY STRATEGY
-        // Forsøg 1: AllOrigins
-        let response = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://api.swu-db.com/cards/search?q=set:${lowerSet}&pretty=false`)}`);
+        // Bruger allorigins til at hente hele sæt-filen
+        // Dette er den mest robuste metode til JSON
+        const targetUrl = `https://api.swu-db.com/cards/search?q=set:${lowerSet}&pretty=false`;
+        const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
         
-        if (!response.ok) {
-            // Forsøg 2: CorsProxy
-            console.log("Proxy 1 failed, trying Proxy 2...");
-            response = await fetch(`https://corsproxy.io/?${encodeURIComponent(`https://api.swu-db.com/cards/search?q=set:${lowerSet}&pretty=false`)}`);
-        }
+        if (!res.ok) throw new Error("Proxy Fejl");
+        
+        const json = await res.json();
+        const data = JSON.parse(json.contents); // allorigins wrapper data i 'contents'
 
-        if (!response.ok) throw new Error("Alle proxies fejlede");
-
-        const data = await response.json();
-        if (!data || data.length === 0) throw new Error("Ingen data fundet (tomt sæt?)");
+        if (!data || data.length === 0) throw new Error("Ingen data");
 
         const processedSet = { leaders: [], bases: [], deck: [] };
 
@@ -236,7 +267,7 @@ async function fetchSetData(setCode) {
 
             const cardObj = {
                 id: idFormatted, set: setCode, name: card.Name, type: type,
-                cost: (card.Cost !== undefined && card.Cost !== null) ? card.Cost.toString() : "0",
+                cost: (card.Cost !== undefined) ? card.Cost.toString() : "0",
                 aspect: mapApiAspect(card),
                 img: frontImg, back: backImg
             };
@@ -252,23 +283,27 @@ async function fetchSetData(setCode) {
         return processedSet;
 
     } catch (err) {
-        console.warn("API Error:", err);
-        statusEl.innerText = "Netværksfejl - Fallback"; statusEl.className = "status-error";
+        console.warn("API Fejl:", err);
+        statusEl.innerText = "Offline Mode (Gætter data)";
+        statusEl.className = "status-error";
         return null; 
     }
 }
 
 function generateFallbackSet(setCode) {
-    // Genererer tilfældig men brugbar data så sortering virker
     const dummySet = { leaders: [], bases: [], deck: [] };
     const aspects = ["Aggression", "Command", "Cunning", "Vigilance"];
     for(let i=1; i<=252; i++) {
         const id = i.toString().padStart(3, '0');
-        let type = "Unit";
-        if (i <= 18) type = "Leader"; else if (i <= 30) type = "Base";
+        const type = getProbableType(i, setCode); // Bruger smart helper
+        
+        // Tjek manuel data
+        let aspect = aspects[i%4];
+        if(MANUAL_DATA[setCode] && MANUAL_DATA[setCode][id]) aspect = MANUAL_DATA[setCode][id].a;
+
         const c = {
             id: id, set: setCode, name: `${setCode} #${id}`, type: type,
-            cost: ((i%8)+1).toString(), aspect: aspects[i%4],
+            cost: ((i%8)+1).toString(), aspect: aspect,
             img: `https://swudb.com/images/cards/${setCode}/${id}.png`,
             back: `https://swudb.com/images/cards/${setCode}/${id}-back.png`
         };
@@ -283,11 +318,12 @@ async function openPacks() {
     const btn = document.getElementById('btn-open');
     const setCode = document.getElementById('setSelect').value;
     const packCount = parseInt(document.getElementById('packCount').value) || 6;
+    
     btn.disabled = true;
     playAudio('snd-cantina');
 
     let setData = await fetchSetData(setCode);
-    if (!setData) setData = generateFallbackSet(setCode); // Use fake data if API fails completely
+    if (!setData || setData.deck.length === 0) setData = generateFallbackSet(setCode);
 
     currentView = [];
     for(let i=0; i<packCount; i++) {
@@ -311,9 +347,11 @@ async function prefetchData() {
 }
 
 function initBoard() {
-    const board = document.getElementById('board'); board.innerHTML = '';
-    let activeCols = (currentSortMode === 'cost') ? ["Leader", "Base", "Pool", ...COST_COLS] : ["Leader", "Base", "Pool", ...ASPECT_COLS];
+    const board = document.getElementById('board');
+    board.innerHTML = '';
     
+    let activeCols = (currentSortMode === 'cost') ? ["Leader", "Base", "Pool", ...COST_COLS] : ["Leader", "Base", "Pool", ...ASPECT_COLS];
+
     activeCols.forEach(colName => {
         const col = document.createElement('div'); col.id = `col-${colName}`;
         let cssClass = 'column';
