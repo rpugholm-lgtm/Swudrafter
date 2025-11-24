@@ -3,59 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SWU: Ultimate Drafter (Direct Sort)</title>
+    <title>SWU: Ultimate Drafter (All-in-One)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --bg: #121212; --panel: #1e1e1e; --accent: #FFE81F; --text-main: #e0e0e0;
-            --c-leader: #eee; --c-base: #888; --c-unit: #444; 
+            --c-leader: #eee; --c-base: #888; --c-unit: #444; --c-pool: #553333; 
+            
             /* Aspect Colors */
             --c-Vigilance: #0055aa; --c-Command: #00aa00; --c-Aggression: #aa0000;
-            --c-Cunning: #aa8800; --c-Villainy: #444; --c-Heroism: #ddd;
+            --c-Cunning: #aa8800; --c-Villainy: #222; --c-Heroism: #ddd;
+
             --success-green: #0a0;
         }
+
         body { background: var(--bg); color: var(--text-main); font-family: 'Rajdhani', sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        
+
         /* HEADER */
         header { padding: 10px 20px; background: #000; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; height: 50px; z-index: 10; }
         h1 { margin: 0; font-family: 'Orbitron'; color: var(--accent); font-size: 18px; letter-spacing: 1px; }
         .controls { display: flex; gap: 10px; align-items: center; }
+        
         select, input { background: #111; color: var(--accent); border: 1px solid #444; padding: 5px 10px; font-family: 'Orbitron'; font-size: 14px; border-radius: 4px; }
         input { width: 50px; text-align: center; }
+        
         button.btn { background: #333; color: white; border: 1px solid #555; padding: 5px 15px; font-family: 'Orbitron'; cursor: pointer; transition: 0.2s; border-radius: 4px; font-size: 12px; text-transform: uppercase; }
         button.btn:hover { border-color: var(--accent); color: var(--accent); background: #000; }
-        button.btn:disabled { color: #555; opacity: 0.7; }
         button.btn-pew { background: #822; border-color: #a44; color: #fff; font-weight: bold; }
-        button.btn-pew:hover { background: #b33; border-color: #f66; }
-        
-        #data-status { font-size: 10px; color: #777; margin-left: 10px; font-family: monospace; }
-        .status-ok { color: var(--success-green) !important; }
-        .status-error { color: #f55 !important; }
-        .status-loading { color: var(--accent) !important; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0.5; } }
+        button.btn-pew:hover { background: #b33; border-color: #f66; color: #fff; transform: scale(1.1); }
         
         .stat { font-family: 'Orbitron'; font-size: 14px; color: #aaa; margin-right: 20px; } .stat span { color: var(--accent); }
 
-        /* MAIN BOARD */
+        /* BOARD */
         #main-area { display: flex; flex: 1; overflow: hidden; }
-        #board { flex: 1; display: flex; gap: 8px; padding: 15px; overflow-x: auto; background: url('https://swudb.com/images/background.jpg') center/cover fixed no-repeat; align-items: flex-start; }
+        #board { flex: 1; display: flex; gap: 10px; padding: 15px; overflow-x: auto; background: url('https://swudb.com/images/background.jpg') center/cover fixed no-repeat; align-items: flex-start; }
         #board::before { content:''; position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); z-index: -1; pointer-events: none; }
 
-        /* COLUMNS - Nu lidt bredere da Pool er væk */
+        /* COLUMNS */
         .column { background: rgba(20, 20, 20, 0.9); border: 1px solid #333; border-radius: 8px; display: flex; flex-direction: column; transition: all 0.2s; flex-shrink: 0; height: 100%; min-width: 160px; width: 160px; }
         .column.drag-over { background: rgba(60, 60, 60, 0.95); box-shadow: 0 0 25px var(--accent); border-color: var(--accent); }
-        .col-special { width: 180px; min-width: 180px; border: 1px solid #555; } /* Lidt bredere til leaders */
-
+        .col-special { width: 180px; min-width: 180px; border: 1px solid #555; }
+        
         .col-header { padding: 8px; text-align: center; font-family: 'Orbitron'; font-weight: bold; font-size: 16px; border-bottom: 4px solid transparent; text-transform: uppercase; background: rgba(0,0,0,0.6); border-top-left-radius: 8px; border-top-right-radius: 8px; z-index: 5; }
         
-        /* Header Colors */
         .ch-Leader { border-bottom-color: var(--c-leader); color: var(--c-leader); } .ch-Base { border-bottom-color: var(--c-base); color: var(--c-base); }
         .ch-cost { border-bottom-color: var(--c-unit); color: #fff; font-size: 20px; }
-        .ch-Aggression { border-bottom-color: var(--c-Aggression); color: #ff6666; } .ch-Command { border-bottom-color: var(--c-Command); color: #66ff66; } .ch-Cunning { border-bottom-color: var(--c-Cunning); color: #ffee66; } .ch-Vigilance { border-bottom-color: var(--c-Vigilance); color: #66bbff; } .ch-Villainy { border-bottom-color: var(--c-Villainy); color: #999; } .ch-Heroism { border-bottom-color: var(--c-Heroism); color: #fff; }
+        .ch-Aggression { border-bottom-color: var(--c-Aggression); color: #ff6666; } .ch-Command { border-bottom-color: var(--c-Command); color: #66ff66; }
+        .ch-Cunning { border-bottom-color: var(--c-Cunning); color: #ffee66; } .ch-Vigilance { border-bottom-color: var(--c-Vigilance); color: #66bbff; }
+        .ch-Villainy { border-bottom-color: var(--c-Villainy); color: #999; } .ch-Heroism { border-bottom-color: var(--c-Heroism); color: #fff; }
 
-        .col-content { flex: 1; overflow-y: auto; overflow-x: visible; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+        .col-content { flex: 1; overflow-y: auto; overflow-x: visible; padding: 15px 10px 50px 10px; display: flex; flex-direction: column; align-items: center; }
 
         /* SIDEBAR */
         #sidebar { width: 280px; background: #111; border-left: 1px solid #333; display: flex; flex-direction: column; z-index: 100; transition: all 0.2s; position: relative; flex-shrink: 0; }
@@ -69,22 +68,19 @@
 
         /* CARDS */
         .card-item { position: relative; background: #000; border-radius: 6px; cursor: grab; box-shadow: 0 -2px 5px rgba(0,0,0,0.5); transition: transform 0.1s ease-out, margin 0.2s; display: flex; flex-direction: column; width: 100%; z-index: 1; }
-        /* Stacking Magic - Gælder kun Unit kolonnerne */
-        .col-content:not(#list-Leader):not(#list-Base) .card-item:not(:first-child) { margin-top: -145px; } /* Lidt strammere stacking */
-        #list-Leader .card-item, #list-Base .card-item { margin-top: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.8); }
-
-        .card-item:hover { transform: scale(1.35) translateY(-15px); z-index: 1000 !important; box-shadow: 0 15px 40px rgba(0,0,0,0.9); border: 1px solid var(--accent); }
+        .col-content:not(#list-Leader):not(#list-Base) .card-item:not(:first-child) { margin-top: -135px; }
+        #list-Leader .card-item, #list-Base .card-item { margin-top: 5px; box-shadow: 0 4px 8px rgba(0,0,0,0.6); }
+        .card-item:hover { transform: scale(1.35) translateY(-10px); z-index: 1000 !important; box-shadow: 0 10px 30px rgba(0,0,0,0.9); border: 1px solid var(--accent); }
         .card-item img { width: 100%; height: auto; display: block; border-radius: 6px; pointer-events: none; }
-
         .card-actions { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); display: none; align-items: center; justify-content: center; border-radius: 6px; }
         .card-item:hover .card-actions { display: flex; }
-        .add-icon { font-size: 24px; color: #fff; font-weight: bold; background: rgba(0,0,0,0.6); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
+        .add-icon { font-size: 24px; color: #fff; font-weight: bold; text-shadow: 0 0 10px #000; pointer-events: none; background: rgba(0,0,0,0.6); border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border: 2px solid #fff; }
         .stack-badge { position: absolute; top: 5px; right: 5px; background: var(--accent); color: #000; width: 20px; height: 20px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 11px; font-weight: 900; border: 2px solid #000; z-index: 5; box-shadow: 2px 2px 5px #000; }
 
-        /* PREVIEW TOOLTIP */
+        /* PREVIEW */
         #preview-tooltip { position: fixed; display: none; z-index: 5000; pointer-events: none; background: rgba(0,0,0,0.8); border: 2px solid #555; border-radius: 8px; padding: 0; box-shadow: 0 10px 40px rgba(0,0,0,0.9); overflow: hidden; }
         #preview-tooltip img { width: 320px; display: block; border-radius: 6px; }
-        #preview-tooltip.big-preview img { width: auto; height: 65vh; max-width: none; }
+        #preview-tooltip.big-preview img { width: auto; height: 60vh; max-width: none; }
 
         /* MODAL */
         #modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:2000; justify-content:center; align-items:center; flex-direction: column; }
@@ -94,7 +90,7 @@
         .big-flip-btn { background: var(--accent); color: #000; font-family: 'Orbitron'; font-size: 24px; font-weight: 900; padding: 15px 40px; border: 3px solid #000; border-radius: 8px; cursor: pointer; box-shadow: 0 0 20px var(--accent); animation: pulse 2s infinite; display: none; }
         .big-flip-btn:hover { background: #fff; transform: scale(1.05); }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 232, 31, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(255, 232, 31, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 232, 31, 0); } }
-        
+
         #toast { visibility: hidden; min-width: 200px; background-color: #333; color: #fff; text-align: center; border-radius: 4px; padding: 12px; position: fixed; z-index: 3000; left: 50%; bottom: 30px; transform: translateX(-50%); font-family: 'Orbitron'; border: 1px solid var(--accent); }
         #toast.show { visibility: visible; animation: fadein 0.3s, fadeout 0.3s 2.5s; }
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
@@ -106,7 +102,7 @@
     <header>
         <div class="controls">
             <h1>SWU Drafter</h1>
-            <select id="setSelect" onchange="prefetchData()">
+            <select id="setSelect">
                 <option value="TWI">Twilight of the Republic (TWI)</option>
                 <option value="JTL">Jump to Lightspeed (JTL)</option>
                 <option value="LOF">Legends of the Force (LOF)</option>
@@ -114,7 +110,6 @@
                 <option value="SOR">Spark of Rebellion (SOR)</option>
                 <option value="SHD">Shadows of the Galaxy (SHD)</option>
             </select>
-            <span id="data-status"></span>
             
             <label style="color:#aaa; font-size:12px; margin-left:10px;">Pakker:</label>
             <input type="number" id="packCount" value="6" min="1" max="24">
@@ -135,7 +130,6 @@
             <div class="sb-footer">
                 <button class="btn" style="width:100%" onclick="copyJSON()">Kopiér JSON</button>
                 <button class="btn" style="width:100%; margin-top:5px; background:#4a1a1a; border-color:#6a2a2a;" onclick="clearDeck()">Slet Deck</button>
-                <button class="btn" style="width:100%; margin-top:5px; font-size:10px; background:#222;" onclick="clearCache()">Ryd Data</button>
             </div>
         </div>
     </div>
@@ -155,127 +149,72 @@
     <audio id="snd-copy" src="https://www.myinstants.com/media/sounds/lightsaber-turn-on.mp3" preload="auto"></audio>
 
 <script>
+// --- CONFIG ---
 const COST_COLS = ["1", "2", "3", "4", "5", "6", "7", "8"];
 const ASPECT_COLS = ["Aggression", "Command", "Cunning", "Vigilance", "Villainy", "Heroism"];
-let myDeck = {}, currentView = [], areSpecialColsVisible = true, currentSortMode = 'cost', CARD_DATABASE = {}; 
+// ASPECTS MAP FOR SIMULATED DATA
+const ASPECTS = ["Aggression", "Command", "Cunning", "Vigilance", "Villainy", "Heroism"];
 
-// --- MANUAL DATA FOR SIKKERHED (Hvis API fejler) ---
-const MANUAL_DATA = {
-    "SOR": {
-        "001": {t:"Leader", a:"Vigilance"}, "010": {t:"Leader", a:"Aggression"}, "019": {t:"Base", a:"Vigilance"}
-    },
-    "SEC": {
-        "001": {t:"Leader", a:"Vigilance"}, "015": {t:"Leader", a:"Heroism"},
-        "019": {t:"Base", a:"Vigilance"}, "025": {t:"Unit", a:"Vigilance"}
-    }
-};
+// --- APP STATE ---
+let myDeck = {};
+let currentView = [];
+let areSpecialColsVisible = true; 
+let currentSortMode = 'cost'; 
 
-// --- API HELPERS ---
-function mapApiType(cardData) {
-    if (!cardData.Type) return "Unit";
-    const t = cardData.Type.toLowerCase();
-    if (t.includes("leader")) return "Leader";
-    if (t.includes("base")) return "Base";
-    return "Unit";
-}
-function mapApiAspect(cardData) {
-    const aspects = cardData.Aspects || [];
-    const mainColors = ["Aggression", "Command", "Cunning", "Vigilance"];
-    for (let a of aspects) if (mainColors.includes(a)) return a;
-    return aspects.length > 0 ? aspects[0] : "Villainy";
-}
+// --- INTERNAL DATA GENERATOR (NO API REQUIRED) ---
+function generateSetData(setCode) {
+    const leaders = [];
+    const bases = [];
+    const deck = [];
 
-// --- FETCH DATA ---
-async function fetchSetData(setCode) {
-    const statusEl = document.getElementById('data-status');
-    const lowerSet = setCode.toLowerCase();
-    
-    if (CARD_DATABASE[setCode]) return CARD_DATABASE[setCode];
-
-    const cacheKey = `SWU_V8_${setCode}`;
-    const cached = localStorage.getItem(cacheKey);
-    if (cached) {
-        CARD_DATABASE[setCode] = JSON.parse(cached);
-        return CARD_DATABASE[setCode];
-    }
-
-    statusEl.innerText = "Henter data...";
-    statusEl.className = "status-loading";
-
-    try {
-        const targetUrl = `https://api.swu-db.com/cards/search?q=set:${lowerSet}&pretty=false`;
-        // Bruger allorigins proxy
-        const res = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`);
-        
-        if (!res.ok) throw new Error("Proxy Fejl");
-        const data = await res.json();
-        if (!data || data.length === 0) throw new Error("Ingen data");
-
-        const processedSet = { leaders: [], bases: [], deck: [] };
-
-        data.forEach(card => {
-            const idFormatted = card.Number.toString().padStart(3, '0');
-            const type = mapApiType(card);
-            
-            let frontImg = card.FrontArt || `https://swudb.com/images/cards/${setCode}/${idFormatted}.png`;
-            let backImg = card.BackArt || (type==='Leader' ? `https://swudb.com/images/cards/${setCode}/${idFormatted}-back.png` : null);
-
-            const cardObj = {
-                id: idFormatted, set: setCode, name: card.Name, type: type,
-                cost: (card.Cost != null) ? card.Cost.toString() : "0",
-                aspect: mapApiAspect(card), img: frontImg, back: backImg
-            };
-
-            if (type === 'Leader') processedSet.leaders.push(cardObj);
-            else if (type === 'Base') processedSet.bases.push(cardObj);
-            else processedSet.deck.push(cardObj);
-        });
-
-        CARD_DATABASE[setCode] = processedSet;
-        try { localStorage.setItem(cacheKey, JSON.stringify(processedSet)); } catch(e){}
-        statusEl.innerText = "Online"; statusEl.className = "status-ok";
-        return processedSet;
-
-    } catch (err) {
-        console.warn(err);
-        statusEl.innerText = "Offline"; statusEl.className = "status-error";
-        return null;
-    }
-}
-
-// --- FALLBACK ---
-function generateFallbackSet(setCode) {
-    const dummySet = { leaders: [], bases: [], deck: [] };
-    const aspects = ["Aggression", "Command", "Cunning", "Vigilance"];
-    for(let i=1; i<=252; i++) {
-        const id = i.toString().padStart(3, '0');
+    // Generer 252 kort baseret på standard SWU set-struktur
+    for (let i = 1; i <= 252; i++) {
+        const idStr = i.toString().padStart(3, '0');
         let type = "Unit";
-        
-        // Tjek manual data for SEC fix
-        if(MANUAL_DATA[setCode] && MANUAL_DATA[setCode][id]) {
-            type = MANUAL_DATA[setCode][id].t;
-        } else {
-             // Gæt hvis ingen manuel data (Virker for SOR/SHD)
-            if (i <= 18) type = "Leader"; else if (i <= 30) type = "Base";
+        let cost = ((i % 8) + 1).toString();
+        let aspect = ASPECTS[i % 4]; // Rotér farverne
+
+        // REGLER FOR KORTTYPER (Standard SWU)
+        if (i <= 18) {
+            type = "Leader";
+            cost = "0";
+        } else if (i >= 19 && i <= 30) {
+            // Special Case for SEC (Secrets of Power har færre baser)
+            if (setCode === "SEC" && i > 24) {
+                type = "Unit"; 
+            } else {
+                type = "Base";
+            }
         }
 
-        let aspect = aspects[i%4];
-        if(MANUAL_DATA[setCode] && MANUAL_DATA[setCode][id]) aspect = MANUAL_DATA[setCode][id].a;
+        // Billede URL
+        let imgFront = `https://swudb.com/cdn-cgi/image/quality=95/images/cards/${setCode}/${idStr}.png`;
+        let imgBack = null;
+        
+        if (type === 'Leader') {
+            imgBack = `https://swudb.com/cdn-cgi/image/quality=95/images/cards/${setCode}/${idStr}-back.png`;
+        }
 
-        const c = {
-            id: id, set: setCode, name: `${setCode} #${id}`, type: type,
-            cost: ((i%8)+1).toString(), aspect: aspect,
-            img: `https://swudb.com/images/cards/${setCode}/${id}.png`,
-            back: `https://swudb.com/images/cards/${setCode}/${id}-back.png`
+        const card = {
+            id: idStr,
+            set: setCode,
+            name: `${setCode} #${idStr}`,
+            type: type,
+            cost: cost,
+            aspect: aspect,
+            img: imgFront,
+            back: imgBack
         };
-        if (type==='Leader') dummySet.leaders.push(c);
-        else if (type==='Base') dummySet.bases.push(c);
-        else dummySet.deck.push(c);
+
+        if (type === 'Leader') leaders.push(card);
+        else if (type === 'Base') bases.push(card);
+        else deck.push(card);
     }
-    return dummySet;
+
+    return { leaders, bases, deck };
 }
 
-// --- LOGIC ---
+// --- CORE LOGIC ---
 async function openPacks() {
     const btn = document.getElementById('btn-open');
     const setCode = document.getElementById('setSelect').value;
@@ -284,17 +223,26 @@ async function openPacks() {
     btn.disabled = true;
     playAudio('snd-cantina');
 
-    let setData = await fetchSetData(setCode);
-    if (!setData || setData.deck.length === 0) setData = generateFallbackSet(setCode);
+    // GENERER DATA LOKALT (LYNHURTIGT & FEJLFRIT)
+    const setData = generateSetData(setCode);
 
     currentView = [];
     for(let i=0; i<packCount; i++) {
-        if(setData.leaders.length) currentView.push({...setData.leaders[Math.floor(Math.random()*setData.leaders.length)], uid:Date.now()+i+'l', column:'Leader'});
-        if(setData.bases.length) currentView.push({...setData.bases[Math.floor(Math.random()*setData.bases.length)], uid:Date.now()+i+'b', column:'Base'});
+        // 1 Leader
+        if(setData.leaders.length) {
+            const l = setData.leaders[Math.floor(Math.random()*setData.leaders.length)];
+            currentView.push({...l, uid:Date.now()+i+'l', column:'Leader'});
+        }
+        // 1 Base
+        if(setData.bases.length) {
+            const b = setData.bases[Math.floor(Math.random()*setData.bases.length)];
+            currentView.push({...b, uid:Date.now()+i+'b', column:'Base'});
+        }
+        // 14 Units
         for(let k=0; k<14; k++) {
             if(setData.deck.length) {
                 const c = setData.deck[Math.floor(Math.random()*setData.deck.length)];
-                // Auto sortering DIREKTE til kollonne
+                // Bestem kolonne
                 let col = (currentSortMode === 'cost') ? ((parseInt(c.cost) > 8) ? "8" : c.cost) : c.aspect;
                 currentView.push({...c, uid:Date.now()+i+k+'d', column:col});
             }
@@ -304,13 +252,10 @@ async function openPacks() {
     btn.disabled = false;
 }
 
-function prefetchData() {
-    fetchSetData(document.getElementById('setSelect').value);
-}
-
-// --- BOARD ---
 function initBoard() {
-    const board = document.getElementById('board'); board.innerHTML = '';
+    const board = document.getElementById('board');
+    board.innerHTML = '';
+    
     let activeCols = (currentSortMode === 'cost') ? ["Leader", "Base", ...COST_COLS] : ["Leader", "Base", ...ASPECT_COLS];
     
     activeCols.forEach(colName => {
@@ -318,6 +263,7 @@ function initBoard() {
         let cssClass = 'column';
         if (colName === "Leader" || colName === "Base") cssClass += ' col-special';
         col.className = cssClass;
+        
         col.ondragover = e => e.preventDefault();
         col.ondrop = e => handleDropOnBoard(e, colName);
 
@@ -331,11 +277,19 @@ function initBoard() {
     });
     
     const sidebar = document.getElementById('sidebar');
-    sidebar.ondragover = (e) => { e.preventDefault(); sidebar.classList.add('drag-over-deck'); };
-    sidebar.ondragleave = (e) => { sidebar.classList.remove('drag-over-deck'); };
-    sidebar.ondrop = (e) => handleDropOnDeck(e);
+    sidebar.ondragover = e => { e.preventDefault(); sidebar.classList.add('drag-over-deck'); };
+    sidebar.ondragleave = e => { sidebar.classList.remove('drag-over-deck'); };
+    sidebar.ondrop = e => handleDropOnDeck(e);
+    
     toggleLeadersBases(true);
-    document.addEventListener('keydown', function(e) { if (e.code === 'Space' && document.getElementById('modal').style.display === 'flex') { e.preventDefault(); flipLeader(); } });
+    
+    // Spacebar flip
+    document.addEventListener('keydown', function(e) {
+        if (e.code === 'Space' && document.getElementById('modal').style.display === 'flex') {
+            e.preventDefault(); 
+            flipLeader();
+        }
+    });
 }
 
 function renderBoard() {
@@ -344,26 +298,29 @@ function renderBoard() {
 
     const map = {};
     currentView.forEach(c => {
+        // Tving korrekt sortering
         let target = c.column;
         if (c.type !== 'Leader' && c.type !== 'Base') {
              if (currentSortMode === 'cost') target = (parseInt(c.cost)>8)?"8":c.cost;
              else target = c.aspect;
         }
         c.column = target;
+        
         const key = `${c.id}_${c.column}`;
         if(map[key]) map[key].count++; else map[key] = {...c, count:1};
     });
 
     document.getElementById('s-total').innerText = currentView.length;
+
     Object.values(map).forEach(c => {
         const target = document.getElementById(`list-${c.column}`);
-        if(!target) return; // Skip if column not active (rare)
+        if(!target) return;
         
         const cardEl = document.createElement('div'); cardEl.className = `card-item`; cardEl.draggable = true;
-        cardEl.ondragstart = (e) => { e.dataTransfer.setData("text/plain", JSON.stringify({id:c.id, set:c.set})); };
-        cardEl.onclick = (e) => { if(e.target.tagName !== 'DIV') openModal(c); };
-        cardEl.onmouseenter = (e) => showPreview(e, c.img, c.type); 
-        cardEl.onmouseleave = hidePreview; cardEl.onmousemove = (e) => movePreview(e);
+        cardEl.ondragstart = e => { e.dataTransfer.setData("text/plain", JSON.stringify({id:c.id, set:c.set})); };
+        cardEl.onclick = e => { if(e.target.tagName !== 'DIV') openModal(c); };
+        cardEl.onmouseenter = e => showPreview(e, c.img, c.type); 
+        cardEl.onmouseleave = hidePreview; cardEl.onmousemove = e => movePreview(e);
 
         const stackHtml = c.count > 1 ? `<div class="stack-badge">${c.count}</div>` : '';
         cardEl.innerHTML = `${stackHtml}<img src="${c.img}" draggable="false"><div class="card-actions" onclick="addToDeck('${c.id}', '${c.set}')"><div class="add-icon">+</div></div>`;
@@ -371,13 +328,14 @@ function renderBoard() {
     });
 }
 
-// --- HELPERS ---
+// --- UTILS ---
 function toggleSort() {
     const btn = document.getElementById('btn-sort');
     currentSortMode = (currentSortMode === 'cost') ? 'aspect' : 'cost';
     btn.innerText = `Sorter: ${currentSortMode === 'cost' ? 'Cost' : 'Aspect'}`;
     initBoard(); renderBoard();
 }
+
 function toggleLeadersBases(maintain) {
     if(!maintain) areSpecialColsVisible = !areSpecialColsVisible;
     const disp = areSpecialColsVisible ? 'flex' : 'none';
@@ -385,24 +343,30 @@ function toggleLeadersBases(maintain) {
     if(document.getElementById('col-Base')) document.getElementById('col-Base').style.display = disp;
     document.getElementById('btn-toggle-lb').innerText = areSpecialColsVisible ? "Skjul L/B" : "Vis L/B";
 }
-function playAudio(id) { const s=document.getElementById(id); if(s){s.volume=0.4; s.currentTime=0; s.play().catch(e=>{});} }
-function handleDropOnBoard(e) { e.preventDefault(); }
-function handleDropOnDeck(e) { e.preventDefault(); try{const d=JSON.parse(e.dataTransfer.getData("text/plain")); if(d.id) addToDeck(d.id, d.set);}catch(e){} document.getElementById('sidebar').classList.remove('drag-over-deck'); }
-function addToDeck(id, set) {
-    const idx = currentView.findIndex(c => c.id === id && c.set === set);
+
+function addToDeck(id, setCode) {
+    const idx = currentView.findIndex(c => c.id === id && c.set === setCode);
     if (idx === -1) return;
-    const c = currentView.splice(idx, 1)[0];
-    const k = `${c.set}_${c.id}`;
-    if(myDeck[k]) myDeck[k].count++; else myDeck[k] = {...c, count: 1}; 
+    const card = currentView[idx]; currentView.splice(idx, 1); 
+    const key = `${card.set}_${card.id}`;
+    if(myDeck[key]) myDeck[key].count++; else myDeck[key] = { ...card, count: 1 }; 
     renderBoard(); updateSidebar();
 }
+
 function removeFromDeck(key) {
     if(!myDeck[key]) return;
-    const c = myDeck[key]; c.count--;
-    if(c.count <= 0) delete myDeck[key];
-    currentView.push({ ...c, count: undefined, uid: Date.now() });
+    const card = myDeck[key]; card.count--;
+    if(card.count <= 0) delete myDeck[key];
+    
+    // Return logic
+    let retCol = (currentSortMode === 'cost') ? card.cost : card.aspect;
+    if (card.type === 'Leader') retCol = 'Leader';
+    if (card.type === 'Base') retCol = 'Base';
+
+    currentView.push({ ...card, count: undefined, uid: Date.now(), column: retCol });
     renderBoard(); updateSidebar();
 }
+
 function updateSidebar() {
     const ul = document.getElementById('deck-list'); ul.innerHTML = '';
     let sum = 0;
@@ -412,16 +376,29 @@ function updateSidebar() {
         li.style.borderLeftColor = `var(--c-${c.type === 'Leader' ? 'leader' : c.type === 'Base' ? 'base' : 'unit'})`;
         li.innerHTML = `<span>${c.name}</span> <span style="color:var(--accent); font-weight:bold;">${c.count}</span>`;
         li.onclick = () => removeFromDeck(`${c.set}_${c.id}`);
-        li.onmouseenter = (e) => showPreview(e, c.img, c.type);
-        li.onmouseleave = hidePreview; li.onmousemove = (e) => movePreview(e);
+        li.onmouseenter = e => showPreview(e, c.img, c.type);
+        li.onmouseleave = hidePreview; li.onmousemove = e => movePreview(e);
         ul.appendChild(li);
     });
     document.getElementById('deck-count').innerText = sum;
 }
-function clearDeck() { Object.values(myDeck).forEach(c => { for(let i=0; i<c.count; i++) currentView.push({...c, count:undefined}); }); myDeck={}; renderBoard(); updateSidebar(); }
-function clearCache() { localStorage.clear(); alert("Cache ryddet!"); location.reload(); }
 
-// --- PREVIEW ---
+function clearDeck() { 
+    Object.values(myDeck).forEach(c => {
+        for(let i=0; i<c.count; i++) {
+            let col = (currentSortMode === 'cost') ? c.cost : c.aspect;
+            if(c.type === 'Leader') col = 'Leader'; if(c.type === 'Base') col = 'Base';
+            currentView.push({ ...c, count: undefined, column: col });
+        }
+    });
+    myDeck = {}; renderBoard(); updateSidebar(); 
+}
+function clearCache() { location.reload(); }
+
+function playAudio(id) { const s=document.getElementById(id); if(s){s.volume=0.4; s.currentTime=0; s.play().catch(e=>{});} }
+function handleDropOnBoard(e) { e.preventDefault(); } // Auto-sort active
+function handleDropOnDeck(e) { e.preventDefault(); try{const d=JSON.parse(e.dataTransfer.getData("text/plain")); if(d.id) addToDeck(d.id, d.set);}catch(e){} document.getElementById('sidebar').classList.remove('drag-over-deck'); }
+
 const tooltip = document.getElementById('preview-tooltip');
 function showPreview(e, src, type) {
     tooltip.innerHTML = `<img src="${src}">`;
@@ -431,13 +408,12 @@ function showPreview(e, src, type) {
 function movePreview(e) {
     const w=window.innerWidth; let x=e.clientX+20, y=e.clientY+10;
     if(x+(tooltip.className?600:320)>w) x=e.clientX-(tooltip.className?600:320)-20;
-    const h = tooltip.offsetHeight || 400;
-    if(y+h > window.innerHeight) y = window.innerHeight - h - 20;
+    const winH = window.innerHeight; const h = tooltip.offsetHeight || 400;
+    if(y+h > winH) y = winH - h - 20;
     tooltip.style.top=y+'px'; tooltip.style.left=x+'px';
 }
 function hidePreview(){tooltip.style.display='none';}
 
-// --- MODAL ---
 const modal = document.getElementById('modal');
 const modalImg = document.getElementById('modal-img');
 const modalFlipBtn = document.getElementById('modal-flip-btn');
@@ -451,7 +427,7 @@ function openModal(c) {
 function flipLeader(e) {
     if(e) e.stopPropagation();
     if(!currentZoomCard || currentZoomCard.type !== 'Leader') return;
-    const isBack = modalImg.src.includes("face=true") || modalImg.src.includes("-back"); 
+    const isBack = modalImg.src.includes("-back"); 
     modalImg.src = isBack ? currentZoomCard.img : currentZoomCard.back;
 }
 function closeModal() { modal.style.display='none'; }
@@ -462,7 +438,7 @@ function copyJSON() {
     document.getElementById('toast').className = 'show'; setTimeout(()=>document.getElementById('toast').className='', 2000);
 }
 
-window.onload = function() { initBoard(); prefetchData(); };
+window.onload = function() { initBoard(); };
 </script>
 </body>
 </html>
